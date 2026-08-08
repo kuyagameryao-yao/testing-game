@@ -6,12 +6,32 @@
    3) Floating code/binary glyph field
    4) Field + button micro-interactions
    5) Fake auth flow -> loading -> redirect placeholder
+   6) Warning notice modal on entry
    ============================================================ */
 
 (() => {
   "use strict";
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const noticeBackdrop = document.getElementById("noticeBackdrop");
+  const noticeBtn = document.getElementById("noticeBtn");
+
+  window.addEventListener("load", () => {
+    noticeBackdrop.classList.add("show");
+    noticeBackdrop.setAttribute("aria-hidden", "false");
+  });
+
+  function closeNotice() {
+    noticeBackdrop.classList.remove("show");
+    noticeBackdrop.classList.add("hide");
+    noticeBackdrop.setAttribute("aria-hidden", "true");
+    setTimeout(() => {
+      noticeBackdrop.style.display = "none";
+    }, 350);
+  }
+
+  noticeBtn.addEventListener("click", closeNotice);
 
   const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false };
   window.addEventListener("mousemove", (e) => {
@@ -21,9 +41,6 @@
   });
   window.addEventListener("mouseleave", () => { mouse.active = false; });
 
-  /* ---------------------------------------------------------
-     1) GRID CANVAS — slow moving grid with parallax on cursor
-  --------------------------------------------------------- */
   const gridCanvas = document.getElementById("canvas-grid");
   const gctx = gridCanvas.getContext("2d");
   let gw, gh;
@@ -59,7 +76,6 @@
       gctx.stroke();
     }
 
-    // soft vignette to keep grid subtle
     const vg = gctx.createRadialGradient(gw / 2, gh / 2, 0, gw / 2, gh / 2, Math.max(gw, gh) * 0.7);
     vg.addColorStop(0, "rgba(0,0,0,0)");
     vg.addColorStop(1, "rgba(0,0,0,0.55)");
@@ -71,9 +87,6 @@
   }
   drawGrid();
 
-  /* ---------------------------------------------------------
-     2) PARTICLE / NODE CANVAS
-  --------------------------------------------------------- */
   const pCanvas = document.getElementById("canvas-particles");
   const pctx = pCanvas.getContext("2d");
   let pw, ph;
@@ -121,7 +134,6 @@
         const dist = Math.hypot(dx, dy);
         if (dist < CURSOR_RADIUS) {
           const force = (1 - dist / CURSOR_RADIUS);
-          // gentle attraction toward cursor, with slight scatter jitter
           this.x -= (dx / dist) * force * 0.6;
           this.y -= (dy / dist) * force * 0.6;
           if (dist < 40) {
@@ -147,7 +159,6 @@
 
   const nodes = Array.from({ length: NODE_COUNT }, () => new Node());
 
-  // occasional pixel/particle burst
   let bursts = [];
   function spawnBurst(x, y) {
     const count = 10;
@@ -171,7 +182,6 @@
   function drawParticles() {
     pctx.clearRect(0, 0, pw, ph);
 
-    // links between close nodes (and to cursor)
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const a = nodes[i], b = nodes[j];
@@ -186,7 +196,6 @@
           pctx.stroke();
         }
       }
-      // link to cursor for a "reactive node" feel
       if (mouse.active) {
         const d = Math.hypot(nodes[i].x - mouse.x, nodes[i].y - mouse.y);
         if (d < CURSOR_RADIUS) {
@@ -206,7 +215,6 @@
       n.draw();
     });
 
-    // cursor glow
     if (mouse.active) {
       const g = pctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 90);
       g.addColorStop(0, "rgba(244,199,64,0.10)");
@@ -217,7 +225,6 @@
       pctx.fill();
     }
 
-    // bursts
     bursts.forEach((b) => {
       b.x += b.vx;
       b.y += b.vy;
@@ -233,9 +240,6 @@
   }
   drawParticles();
 
-  /* ---------------------------------------------------------
-     3) Floating code / binary glyph field (DOM based)
-  --------------------------------------------------------- */
   const glyphField = document.getElementById("glyphField");
   const GLYPHS = ["01", "10", "011", "</>", "{ }", "10110", "0101", "if()", "</>", "001", "110101", "</code>"];
 
@@ -260,9 +264,6 @@
     setInterval(spawnGlyph, 1500);
   }
 
-  /* ---------------------------------------------------------
-     4) Field micro-interactions: magnetic burst + card glow
-  --------------------------------------------------------- */
   const card = document.getElementById("portalCard");
 
   document.querySelectorAll(".field").forEach((field) => {
@@ -280,12 +281,10 @@
 
   function triggerFieldBurst(field) {
     field.classList.remove("burst");
-    // force reflow to restart animation
     void field.offsetWidth;
     field.classList.add("burst");
   }
 
-  // subtle card tilt following the cursor (magnetic feel), disabled on touch
   const isTouch = matchMedia("(hover: none)").matches;
   if (!isTouch && !prefersReducedMotion) {
     document.addEventListener("mousemove", (e) => {
@@ -304,9 +303,6 @@
     card.style.perspective = "800px";
   }
 
-  /* ---------------------------------------------------------
-     5) Button interaction + form submit flow
-  --------------------------------------------------------- */
   const startBtn = document.getElementById("startBtn");
   const ripple = document.getElementById("btnRipple");
   const form = document.getElementById("portalForm");
@@ -323,7 +319,6 @@
     e.preventDefault();
     if (startBtn.classList.contains("loading")) return;
 
-    // 1. ripple
     ripple.style.width = ripple.style.height = "10px";
     ripple.style.left = "50%";
     ripple.style.top = "50%";
@@ -334,24 +329,14 @@
     void ripple.offsetWidth;
     ripple.classList.add("animate");
 
-    // 2/3. brighten + particle explosion at button center
     const rect = startBtn.getBoundingClientRect();
     spawnBurst(rect.left + rect.width / 2 - pCanvas.getBoundingClientRect().left,
                 rect.top + rect.height / 2 - pCanvas.getBoundingClientRect().top);
 
-    // 4. loading state
     startBtn.classList.add("loading");
 
-    // 5. proceed (placeholder — wire up to real auth destination)
     setTimeout(() => {
-  window.location.href = "game.html";
-}, 1800);
-// 4. loading state
-startBtn.classList.add("loading");
-
-// 5. Go to the game
-setTimeout(() => {
-  window.location.href = "game.html";
-}, 1800);
+      window.location.href = "game.html";
+    }, 1800);
   });
 })();
