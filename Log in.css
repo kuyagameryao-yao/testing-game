@@ -53,9 +53,6 @@ body{
 
 ::selection{ background: var(--green); color:#06110a; }
 
-/* ---------------------------------------------------------
-   Base ambient background (fallback under canvases)
---------------------------------------------------------- */
 body::before{
   content:"";
   position:fixed; inset:0;
@@ -76,9 +73,6 @@ canvas{
 }
 #canvas-particles{ z-index:2; }
 
-/* ---------------------------------------------------------
-   Floating code / binary glyph field
---------------------------------------------------------- */
 .glyph-field{
   position:fixed; inset:0; z-index:2;
   overflow:hidden;
@@ -103,9 +97,6 @@ canvas{
   100%{ transform: translateY(-110vh) translateX(30px) rotate(8deg); opacity:0; }
 }
 
-/* ---------------------------------------------------------
-   Scene / layout
---------------------------------------------------------- */
 .scene{
   position:relative;
   z-index:5;
@@ -116,9 +107,6 @@ canvas{
   padding: 32px 20px;
 }
 
-/* ---------------------------------------------------------
-   Portal Card (glassmorphism)
---------------------------------------------------------- */
 .portal-card{
   position:relative;
   width:100%;
@@ -150,7 +138,8 @@ canvas{
   background: conic-gradient(from var(--ang,0deg),
      var(--green) 0deg, var(--gold) 90deg, transparent 160deg,
      transparent 220deg, var(--gold) 300deg, var(--green) 360deg);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity:.55;
@@ -166,7 +155,6 @@ canvas{
   initial-value: 0deg;
 }
 
-/* subtle scanning sheen across the whole card */
 .portal-card::after{
   content:"";
   position:absolute;
@@ -182,9 +170,6 @@ canvas{
   50%{ left:130%; }
 }
 
-/* ---------------------------------------------------------
-   Header
---------------------------------------------------------- */
 .portal-header{
   text-align:center;
   margin-bottom: 30px;
@@ -234,9 +219,6 @@ canvas{
 }
 .subtitle-bracket{ color: var(--green-bright); opacity:.8; }
 
-/* ---------------------------------------------------------
-   Form + fields
---------------------------------------------------------- */
 .portal-form{
   display:flex;
   flex-direction:column;
@@ -306,7 +288,6 @@ canvas{
   letter-spacing:.3px;
 }
 
-/* label float on focus / filled / select-has-value */
 .field input:focus ~ label,
 .field input:not(:placeholder-shown) ~ label,
 .field select:focus ~ label,
@@ -320,7 +301,6 @@ canvas{
   color: var(--gold);
 }
 
-/* focus state border + glow */
 .field:has(input:focus),
 .field:has(select:focus){
   border-color: var(--green-bright);
@@ -333,7 +313,6 @@ canvas{
   filter: drop-shadow(0 0 6px rgba(244,199,64,.6));
 }
 
-/* traveling pulse border (digital pulse tracing the field) */
 .field-pulse-border{
   position:absolute; inset:-1px;
   border-radius: inherit;
@@ -341,7 +320,8 @@ canvas{
   opacity:0;
   transition: opacity .3s var(--ease);
   background: conic-gradient(from 0deg, transparent 0%, var(--gold-bright) 4%, transparent 10%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   padding:1.5px;
@@ -355,7 +335,6 @@ canvas{
   to{ transform: rotate(360deg); }
 }
 
-/* bottom underline sweep */
 .field-underline{
   position:absolute;
   left:14px; right:14px; bottom:-1px;
@@ -371,7 +350,6 @@ canvas{
   transform: scaleX(1);
 }
 
-/* LRN scanline flourish */
 .field-scanline{
   position:absolute;
   left:44px; right:14px; top:0; height:100%;
@@ -396,7 +374,6 @@ canvas{
   100%{ top:100%; }
 }
 
-/* magnetic burst particle on hover/focus (JS toggles .burst) */
 .field.burst::after{
   content:"";
   position:absolute;
@@ -416,7 +393,6 @@ canvas{
   100%{ opacity:0; transform: translate(-50%,-50%) scale(3.2); }
 }
 
-/* select chevron */
 .field-select::after{
   content:"";
   position:absolute;
@@ -432,9 +408,6 @@ canvas{
   border-color: var(--gold-bright);
 }
 
-/* ---------------------------------------------------------
-   START button
---------------------------------------------------------- */
 .start-btn{
   position:relative;
   margin-top: 8px;
@@ -554,26 +527,110 @@ canvas{
   letter-spacing:.3px;
 }
 
-/* ---------------------------------------------------------
-   Reduced motion
---------------------------------------------------------- */
+.notice-backdrop{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background: rgba(4, 8, 12, .72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index:1000;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition: opacity .35s var(--ease), visibility .35s var(--ease);
+}
+
+.notice-backdrop.show{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+
+.notice-modal{
+  width:100%;
+  max-width:520px;
+  border-radius: 22px;
+  padding: 30px 28px 26px;
+  background: linear-gradient(180deg, rgba(18,26,34,.96), rgba(10,15,20,.96));
+  border: 1px solid rgba(244,199,64,.18);
+  box-shadow: 0 28px 80px rgba(0,0,0,.65);
+  text-align:center;
+  transform: translateY(14px) scale(.98);
+  opacity:0;
+  transition: transform .35s var(--ease), opacity .35s var(--ease);
+}
+
+.notice-backdrop.show .notice-modal{
+  transform: translateY(0) scale(1);
+  opacity:1;
+}
+
+.notice-icon{
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.notice-title{
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: var(--gold-bright);
+  margin-bottom: 14px;
+}
+
+.notice-message{
+  color: var(--white);
+  line-height: 1.7;
+  font-size: 15px;
+  margin-bottom: 22px;
+}
+
+.notice-btn{
+  min-width: 160px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(120deg, var(--green) 0%, var(--green-bright) 45%, var(--gold) 100%);
+  color: #06130a;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  box-shadow: 0 12px 28px -12px rgba(47,168,79,.55);
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+
+.notice-btn:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px -12px rgba(244,199,64,.5);
+}
+
+.notice-backdrop.hide{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
 
-/* ---------------------------------------------------------
-   Responsive
---------------------------------------------------------- */
 @media (max-width: 480px){
   .portal-card{ padding: 32px 22px 26px; max-width: 94vw; }
   .school-name{ font-size: 13.5px; }
   .field{ height:52px; }
+  .notice-modal{ padding: 24px 20px 22px; }
+  .notice-title{ font-size: 20px; }
 }
 
-/* Keyboard focus visibility */
 .start-btn:focus-visible,
 .field input:focus-visible,
-.field select:focus-visible{
+.field select:focus-visible,
+.notice-btn:focus-visible{
   outline: 2px solid var(--gold-bright);
   outline-offset: 3px;
 }
