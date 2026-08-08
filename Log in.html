@@ -10,6 +10,18 @@
 </head>
 <body>
 
+  <!-- Warning Notice Modal -->
+  <div class="notice-backdrop" id="noticeBackdrop" aria-hidden="true">
+    <div class="notice-modal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle" aria-describedby="noticeMessage">
+      <div class="notice-icon" aria-hidden="true">⚠️</div>
+      <h2 class="notice-title" id="noticeTitle">ATTENTION</h2>
+      <p class="notice-message" id="noticeMessage">
+        This website is currently in testing. You may Log in using any Username or Password for demonstration purposes. No real account or personal information is required.
+      </p>
+      <button type="button" class="notice-btn" id="noticeBtn">I Understand</button>
+    </div>
+  </div>
+
   <!-- Canvas layers for background systems -->
   <canvas id="canvas-grid"></canvas>
   <canvas id="canvas-particles"></canvas>
