@@ -1,0 +1,579 @@
+/* ============================================================
+   COMPUTER SCIENCE HIGH SCHOOL OF BICOLANDIA — STUDENT PORTAL
+   Design tokens
+   Color:   --navy #0B0F14 (bg base) / --charcoal #121820 (bg layer)
+            --green #2FA84F (school primary) / --green-bright #45D46A
+            --gold #F4C740 (highlight) / --gold-bright #FFE07A
+            --white #F4F7F5 (text)
+   Type:    Display  -> "Orbitron"       (game-UI / futuristic headers)
+            Body     -> "Space Grotesk"  (clean academic-modern)
+            Mono     -> "JetBrains Mono" (code / LRN / data)
+   Signature: circuit-emblem + pulse-traced input borders that trace
+              like a PCB signal path when a field is focused.
+   ============================================================ */
+
+:root{
+  --navy: #070a0e;
+  --navy-2: #0c1219;
+  --charcoal: #121a22;
+  --green: #2FA84F;
+  --green-bright: #45D46A;
+  --green-dim: #1c6b34;
+  --gold: #F4C740;
+  --gold-bright: #FFE07A;
+  --white: #F2F6F4;
+  --mist: #9FB3AC;
+  --danger: #ff6b6b;
+
+  --font-display: 'Orbitron', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius: 22px;
+  --ease: cubic-bezier(.22,.9,.32,1);
+}
+
+*{ box-sizing: border-box; margin:0; padding:0; }
+
+html,body{
+  height:100%;
+  background: var(--navy);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow:hidden;
+}
+
+body{
+  position:relative;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+::selection{ background: var(--green); color:#06110a; }
+
+/* ---------------------------------------------------------
+   Base ambient background (fallback under canvases)
+--------------------------------------------------------- */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background:
+    radial-gradient(1200px 800px at 18% 15%, rgba(47,168,79,.16), transparent 60%),
+    radial-gradient(1000px 700px at 85% 85%, rgba(244,199,64,.10), transparent 55%),
+    linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 55%, #05070a 100%);
+  z-index:0;
+}
+
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:1;
+  pointer-events:none;
+}
+#canvas-particles{ z-index:2; }
+
+/* ---------------------------------------------------------
+   Floating code / binary glyph field
+--------------------------------------------------------- */
+.glyph-field{
+  position:fixed; inset:0; z-index:2;
+  overflow:hidden;
+  pointer-events:none;
+}
+.glyph{
+  position:absolute;
+  font-family: var(--font-mono);
+  color: var(--green);
+  opacity:.16;
+  white-space:nowrap;
+  user-select:none;
+  will-change: transform, opacity;
+  animation: glyphDrift linear infinite;
+}
+.glyph.gold{ color: var(--gold); }
+
+@keyframes glyphDrift{
+  0%{ transform: translateY(8vh) translateX(0) rotate(0deg); opacity:0; }
+  10%{ opacity:.18; }
+  90%{ opacity:.14; }
+  100%{ transform: translateY(-110vh) translateX(30px) rotate(8deg); opacity:0; }
+}
+
+/* ---------------------------------------------------------
+   Scene / layout
+--------------------------------------------------------- */
+.scene{
+  position:relative;
+  z-index:5;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 32px 20px;
+}
+
+/* ---------------------------------------------------------
+   Portal Card (glassmorphism)
+--------------------------------------------------------- */
+.portal-card{
+  position:relative;
+  width:100%;
+  max-width:440px;
+  padding: 42px 38px 34px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(18,26,34,.66), rgba(10,15,20,.72));
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid rgba(244,199,64,.16);
+  box-shadow:
+    0 30px 80px -20px rgba(0,0,0,.7),
+    0 0 0 1px rgba(255,255,255,.02) inset,
+    0 1px 0 rgba(255,255,255,.06) inset;
+  animation: cardFloat 6.5s ease-in-out infinite;
+  overflow:hidden;
+}
+
+@keyframes cardFloat{
+  0%,100%{ transform: translateY(0px); }
+  50%{ transform: translateY(-9px); }
+}
+
+.card-border-glow{
+  position:absolute;
+  inset:-1px;
+  border-radius: inherit;
+  padding:1px;
+  background: conic-gradient(from var(--ang,0deg),
+     var(--green) 0deg, var(--gold) 90deg, transparent 160deg,
+     transparent 220deg, var(--gold) 300deg, var(--green) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity:.55;
+  animation: rotateBorder 8s linear infinite;
+  pointer-events:none;
+}
+@keyframes rotateBorder{
+  to{ --ang: 360deg; }
+}
+@property --ang{
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* subtle scanning sheen across the whole card */
+.portal-card::after{
+  content:"";
+  position:absolute;
+  top:0; left:-60%;
+  width:40%; height:100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.05), transparent);
+  transform: skewX(-12deg);
+  animation: sheen 7s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes sheen{
+  0%,100%{ left:-60%; }
+  50%{ left:130%; }
+}
+
+/* ---------------------------------------------------------
+   Header
+--------------------------------------------------------- */
+.portal-header{
+  text-align:center;
+  margin-bottom: 30px;
+  position:relative;
+  z-index:2;
+}
+
+.emblem{
+  width:74px; height:74px;
+  margin: 0 auto 14px;
+  filter: drop-shadow(0 0 14px rgba(47,168,79,.45));
+  animation: emblemPulse 3.2s ease-in-out infinite;
+}
+.emblem-svg{ width:100%; height:100%; }
+@keyframes emblemPulse{
+  0%,100%{ filter: drop-shadow(0 0 10px rgba(47,168,79,.35)); }
+  50%{ filter: drop-shadow(0 0 20px rgba(244,199,64,.5)); }
+}
+
+.school-name{
+  font-family: var(--font-display);
+  font-weight:700;
+  font-size: 15.5px;
+  letter-spacing: 1.5px;
+  line-height:1.55;
+  text-transform: uppercase;
+  color: var(--white);
+}
+.school-name .line{ display:block; }
+.school-name em{
+  font-style:normal;
+  color: var(--gold);
+  font-size:.85em;
+}
+
+.subtitle{
+  margin-top:10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mist);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.subtitle-bracket{ color: var(--green-bright); opacity:.8; }
+
+/* ---------------------------------------------------------
+   Form + fields
+--------------------------------------------------------- */
+.portal-form{
+  display:flex;
+  flex-direction:column;
+  gap: 22px;
+  position:relative;
+  z-index:2;
+}
+
+.field{
+  position:relative;
+  display:flex;
+  align-items:center;
+  height:56px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(244,247,245,.12);
+  transition: border-color .35s var(--ease), background .35s var(--ease), transform .25s var(--ease), box-shadow .35s var(--ease);
+}
+
+.field:hover{
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.045);
+}
+
+.field-icon{
+  width:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  color: var(--mist);
+  transition: color .3s var(--ease), filter .3s var(--ease);
+}
+.field-icon svg{ width:19px; height:19px; fill:currentColor; }
+
+.field input,
+.field select{
+  flex:1;
+  height:100%;
+  background: transparent;
+  border:none;
+  outline:none;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding-right: 16px;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.field select{
+  cursor:pointer;
+}
+.field select option{
+  background: var(--charcoal);
+  color: var(--white);
+}
+
+.field label{
+  position:absolute;
+  left:44px;
+  top:50%;
+  transform: translateY(-50%);
+  font-size: 14.5px;
+  color: var(--mist);
+  pointer-events:none;
+  transition: all .28s var(--ease);
+  letter-spacing:.3px;
+}
+
+/* label float on focus / filled / select-has-value */
+.field input:focus ~ label,
+.field input:not(:placeholder-shown) ~ label,
+.field select:focus ~ label,
+.field select:valid ~ label{
+  top: 0;
+  transform: translateY(-50%) scale(.78);
+  left: 40px;
+  padding: 0 6px;
+  background: linear-gradient(180deg, #131b23, #131b23);
+  border-radius:4px;
+  color: var(--gold);
+}
+
+/* focus state border + glow */
+.field:has(input:focus),
+.field:has(select:focus){
+  border-color: var(--green-bright);
+  background: rgba(47,168,79,.06);
+  box-shadow: 0 0 0 3px rgba(47,168,79,.12), 0 0 22px rgba(47,168,79,.18);
+}
+.field:has(input:focus) .field-icon,
+.field:has(select:focus) .field-icon{
+  color: var(--gold-bright);
+  filter: drop-shadow(0 0 6px rgba(244,199,64,.6));
+}
+
+/* traveling pulse border (digital pulse tracing the field) */
+.field-pulse-border{
+  position:absolute; inset:-1px;
+  border-radius: inherit;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .3s var(--ease);
+  background: conic-gradient(from 0deg, transparent 0%, var(--gold-bright) 4%, transparent 10%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding:1.5px;
+}
+.field:has(input:focus) .field-pulse-border,
+.field:has(select:focus) .field-pulse-border{
+  opacity:1;
+  animation: pulseTravel 1.6s linear infinite;
+}
+@keyframes pulseTravel{
+  to{ transform: rotate(360deg); }
+}
+
+/* bottom underline sweep */
+.field-underline{
+  position:absolute;
+  left:14px; right:14px; bottom:-1px;
+  height:2px;
+  background: linear-gradient(90deg, var(--green-bright), var(--gold-bright));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .4s var(--ease);
+  border-radius:2px;
+}
+.field:has(input:focus) .field-underline,
+.field:has(select:focus) .field-underline{
+  transform: scaleX(1);
+}
+
+/* LRN scanline flourish */
+.field-scanline{
+  position:absolute;
+  left:44px; right:14px; top:0; height:100%;
+  overflow:hidden;
+  pointer-events:none;
+  border-radius:14px;
+}
+.field-scanline::before{
+  content:"";
+  position:absolute;
+  left:0; top:-100%;
+  width:100%; height:40%;
+  background: linear-gradient(180deg, transparent, rgba(69,212,106,.16), transparent);
+  opacity:0;
+}
+.field:has(input:focus) .field-scanline::before{
+  opacity:1;
+  animation: scan 1.4s ease-in-out infinite;
+}
+@keyframes scan{
+  0%{ top:-40%; }
+  100%{ top:100%; }
+}
+
+/* magnetic burst particle on hover/focus (JS toggles .burst) */
+.field.burst::after{
+  content:"";
+  position:absolute;
+  left: var(--bx, 50%);
+  top: var(--by, 50%);
+  width:6px; height:6px;
+  border-radius:50%;
+  background: var(--gold-bright);
+  box-shadow: 0 0 12px 4px rgba(244,199,64,.6);
+  transform: translate(-50%,-50%);
+  animation: burstPop .5s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes burstPop{
+  0%{ opacity:1; transform: translate(-50%,-50%) scale(0); }
+  60%{ opacity:.8; }
+  100%{ opacity:0; transform: translate(-50%,-50%) scale(3.2); }
+}
+
+/* select chevron */
+.field-select::after{
+  content:"";
+  position:absolute;
+  right:18px; top:50%;
+  width:8px; height:8px;
+  border-right:2px solid var(--mist);
+  border-bottom:2px solid var(--mist);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events:none;
+  transition: border-color .3s;
+}
+.field-select:has(select:focus)::after{
+  border-color: var(--gold-bright);
+}
+
+/* ---------------------------------------------------------
+   START button
+--------------------------------------------------------- */
+.start-btn{
+  position:relative;
+  margin-top: 8px;
+  height:58px;
+  border-radius: 14px;
+  border:none;
+  cursor:pointer;
+  overflow:hidden;
+  background: linear-gradient(120deg, var(--green) 0%, var(--green-bright) 40%, var(--gold) 100%);
+  background-size: 220% 220%;
+  animation: btnGradientShift 5s ease infinite;
+  isolation:isolate;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+  box-shadow: 0 12px 30px -10px rgba(47,168,79,.55);
+}
+.start-btn:hover{
+  transform: translateY(-3px) scale(1.015);
+  box-shadow: 0 18px 40px -10px rgba(244,199,64,.5);
+}
+.start-btn:active{ transform: translateY(-1px) scale(.99); }
+
+@keyframes btnGradientShift{
+  0%,100%{ background-position: 0% 50%; }
+  50%{ background-position: 100% 50%; }
+}
+
+.btn-border{
+  position:absolute; inset:0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.25) inset;
+  pointer-events:none;
+}
+
+.btn-glow{
+  position:absolute;
+  width:140px; height:140px;
+  left: var(--mx, 50%);
+  top: var(--my, 50%);
+  transform: translate(-50%,-50%);
+  background: radial-gradient(circle, rgba(255,255,255,.55), transparent 65%);
+  opacity:0;
+  transition: opacity .3s;
+  pointer-events:none;
+  mix-blend-mode: soft-light;
+}
+.start-btn:hover .btn-glow{ opacity:1; }
+
+.btn-content{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  height:100%;
+  font-family: var(--font-display);
+  font-weight:700;
+  font-size:14.5px;
+  letter-spacing: 2px;
+  color:#06130a;
+  text-shadow: 0 1px 0 rgba(255,255,255,.25);
+}
+.btn-arrow{
+  display:inline-block;
+  transition: transform .3s var(--ease);
+}
+.start-btn:hover .btn-arrow{ transform: translateX(6px); }
+
+.btn-loader{
+  position:absolute; inset:0;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  opacity:0;
+  pointer-events:none;
+  color:#06130a;
+  font-family: var(--font-mono);
+  font-size:12px;
+  letter-spacing:2px;
+  background: linear-gradient(120deg, var(--green-bright), var(--gold));
+}
+.loader-ring{
+  width:16px; height:16px;
+  border-radius:50%;
+  border: 2.5px solid rgba(6,19,10,.28);
+  border-top-color: #06130a;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+.start-btn.loading .btn-content{ opacity:0; }
+.start-btn.loading .btn-loader{ opacity:1; pointer-events:auto; }
+
+.btn-ripple{
+  position:absolute;
+  border-radius:50%;
+  background: rgba(255,255,255,.55);
+  transform: scale(0);
+  pointer-events:none;
+  z-index:1;
+}
+.btn-ripple.animate{
+  animation: rippleOut .6s ease-out forwards;
+}
+@keyframes rippleOut{
+  to{ transform: scale(1); opacity:0; }
+}
+
+.form-footnote{
+  text-align:center;
+  margin-top:4px;
+  font-size:11.5px;
+  color: var(--mist);
+  opacity:.7;
+  letter-spacing:.3px;
+}
+
+/* ---------------------------------------------------------
+   Reduced motion
+--------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ---------------------------------------------------------
+   Responsive
+--------------------------------------------------------- */
+@media (max-width: 480px){
+  .portal-card{ padding: 32px 22px 26px; max-width: 94vw; }
+  .school-name{ font-size: 13.5px; }
+  .field{ height:52px; }
+}
+
+/* Keyboard focus visibility */
+.start-btn:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible{
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+}

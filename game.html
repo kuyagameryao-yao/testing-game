@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SIGNAL — Audio Typing Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+
+<div class="bg-field" aria-hidden="true">
+  <div class="bg-glow bg-glow--a"></div>
+  <div class="bg-glow bg-glow--b"></div>
+  <canvas id="particleCanvas"></canvas>
+</div>
+
+<!-- ================= MAIN MENU ================= -->
+<section id="screen-menu" class="screen screen--active" data-screen>
+  <div class="menu-wrap">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <span class="brand-bar"></span><span class="brand-bar"></span><span class="brand-bar"></span><span class="brand-bar"></span><span class="brand-bar"></span>
+      </div>
+      <h1 class="brand-title">SIGNAL</h1>
+      <p class="brand-sub">an audio&nbsp;→&nbsp;typing trainer</p>
+    </div>
+
+    <nav class="menu-actions">
+      <button class="btn btn--primary btn--lg" data-action="play">
+        <span>Play</span>
+        <svg viewBox="0 0 24 24" class="btn-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+      </button>
+      <button class="btn btn--ghost" data-action="how-to-play">How to Play</button>
+      <button class="btn btn--ghost" data-action="settings">Settings</button>
+    </nav>
+
+    <p class="menu-footnote">Built for a typing &amp; listening research study · works on desktop, tablet &amp; mobile</p>
+  </div>
+</section>
+
+<!-- ================= HOW TO PLAY ================= -->
+<section id="screen-how" class="screen" data-screen>
+  <div class="panel panel--doc">
+    <h2 class="panel-title">How to Play</h2>
+    <ol class="howto-list">
+      <li><span class="howto-step">Listen</span>Press <strong>Play Audio</strong> and listen closely to the word or sentence.</li>
+      <li><span class="howto-step">Think</span>Take a beat — you can replay the audio as many times as you need.</li>
+      <li><span class="howto-step">Type</span>Type exactly what you heard into the input box, including punctuation.</li>
+      <li><span class="howto-step">Submit</span>Press <strong>Enter</strong> or tap <strong>Submit</strong> to check your answer.</li>
+      <li><span class="howto-step">Feedback</span>See if you were correct, keep your combo alive, and move to the next challenge.</li>
+    </ol>
+    <p class="howto-tip">Tip: accuracy and combo matter as much as speed — a clean streak scores higher than a fast, sloppy one.</p>
+    <button class="btn btn--primary" data-action="back-to-menu">Back to Menu</button>
+  </div>
+</section>
+
+<!-- ================= SETTINGS ================= -->
+<section id="screen-settings" class="screen" data-screen>
+  <div class="panel panel--doc">
+    <h2 class="panel-title">Settings</h2>
+
+    <div class="setting-row">
+      <label for="sldMusic">Music Volume</label>
+      <input type="range" id="sldMusic" min="0" max="100" value="40" class="slider">
+      <span class="setting-val" data-val-for="sldMusic">40%</span>
+    </div>
+
+    <div class="setting-row">
+      <label for="sldSfx">Sound Effects</label>
+      <input type="range" id="sldSfx" min="0" max="100" value="70" class="slider">
+      <span class="setting-val" data-val-for="sldSfx">70%</span>
+    </div>
+
+    <div class="setting-row">
+      <label for="sldVoice">Narration Volume</label>
+      <input type="range" id="sldVoice" min="0" max="100" value="100" class="slider">
+      <span class="setting-val" data-val-for="sldVoice">100%</span>
+    </div>
+
+    <div class="setting-row setting-row--toggle">
+      <label for="chkAnim">Animations</label>
+      <button class="toggle" id="chkAnim" data-state="on" role="switch" aria-checked="true">
+        <span class="toggle-knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row setting-row--toggle">
+      <label for="chkReduced">Reduced Motion</label>
+      <button class="toggle" id="chkReduced" data-state="off" role="switch" aria-checked="false">
+        <span class="toggle-knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row setting-row--toggle">
+      <label for="chkHighContrast">High Contrast Theme</label>
+      <button class="toggle" id="chkHighContrast" data-state="off" role="switch" aria-checked="false">
+        <span class="toggle-knob"></span>
+      </button>
+    </div>
+
+    <button class="btn btn--primary" data-action="back-to-menu">Save &amp; Back</button>
+  </div>
+</section>
+
+<!-- ================= GAME ================= -->
+<section id="screen-game" class="screen" data-screen>
+  <div class="hud">
+    <div class="hud-card">
+      <span class="hud-label">Score</span>
+      <span class="hud-value mono" id="statScore">0</span>
+    </div>
+    <div class="hud-card">
+      <span class="hud-label">WPM</span>
+      <span class="hud-value mono" id="statWpm">0</span>
+    </div>
+    <div class="hud-card">
+      <span class="hud-label">Accuracy</span>
+      <span class="hud-value mono" id="statAccuracy">100%</span>
+    </div>
+    <div class="hud-card hud-card--combo" id="comboCard">
+      <span class="hud-label">Combo</span>
+      <span class="hud-value mono" id="statCombo">×0</span>
+    </div>
+    <div class="hud-card hud-card--timer" id="timerCard">
+      <span class="hud-label">Time</span>
+      <span class="hud-value mono" id="statTime">60.0</span>
+    </div>
+  </div>
+
+  <div class="game-stage">
+
+    <div class="audio-panel glass">
+      <div class="audio-status" id="audioStatus">
+        <span class="audio-status-dot" id="audioDot"></span>
+        <span id="audioStatusText">Get ready…</span>
+      </div>
+
+      <div class="waveform" id="waveform" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+
+      <button class="btn btn--primary btn--replay" id="btnReplay">
+        <svg viewBox="0 0 24 24" class="btn-icon"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/></svg>
+        <span>Replay Audio</span>
+      </button>
+    </div>
+
+    <form class="type-panel glass" id="typeForm" autocomplete="off">
+      <label class="type-label" for="typeInput" id="typeLabel">⌨ Type what you heard</label>
+      <input
+        type="text"
+        id="typeInput"
+        class="type-input"
+        placeholder="Start typing…"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        disabled
+      />
+      <div class="type-meta">
+        <span id="charCounter" class="char-counter">0 characters</span>
+        <button type="submit" class="btn btn--primary btn--submit" id="btnSubmit" disabled>Submit</button>
+      </div>
+      <div class="feedback-line" id="feedbackLine" aria-live="polite"></div>
+    </form>
+
+    <div class="mini-stats">
+      <div class="mini-stat"><span class="mini-stat-label">Correct</span><span class="mini-stat-value mono" id="statCorrect">0</span></div>
+      <div class="mini-stat"><span class="mini-stat-label">Mistakes</span><span class="mini-stat-value mono" id="statMistakes">0</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="screen-results" class="screen" data-screen>
+  <div class="panel panel--results glass">
+    <span class="results-eyebrow">Round Complete</span>
+    <div class="rating-badge" id="ratingBadge">
+      <span id="ratingLetter">S</span>
+    </div>
+    <h2 class="results-title" id="ratingLabel">Excellent</h2>
+
+    <div class="results-final-score">
+      <span class="results-final-label">Final Score</span>
+      <span class="results-final-value mono" id="finalScore">0</span>
+    </div>
+
+    <div class="results-grid" id="resultsGrid">
+      <div class="result-stat" style="--d:0"><span class="result-stat-label">WPM</span><span class="result-stat-value mono" id="resWpm">0</span></div>
+      <div class="result-stat" style="--d:1"><span class="result-stat-label">Accuracy</span><span class="result-stat-value mono" id="resAccuracy">0%</span></div>
+      <div class="result-stat" style="--d:2"><span class="result-stat-label">Correct</span><span class="result-stat-value mono" id="resCorrect">0</span></div>
+      <div class="result-stat" style="--d:3"><span class="result-stat-label">Wrong</span><span class="result-stat-value mono" id="resWrong">0</span></div>
+      <div class="result-stat" style="--d:4"><span class="result-stat-label">Best Combo</span><span class="result-stat-value mono" id="resCombo">×0</span></div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn btn--primary" data-action="play-again">Play Again</button>
+      <button class="btn btn--ghost" data-action="back-to-menu">Main Menu</button>
+    </div>
+  </div>
+</section>
+
+<script src="game.js"></script>
+</body>
+</html>

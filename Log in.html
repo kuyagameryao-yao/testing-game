@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Science High School of Bicolandia — Student Digital Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Log in.css">
+</head>
+<body>
+
+  <!-- Canvas layers for background systems -->
+  <canvas id="canvas-grid"></canvas>
+  <canvas id="canvas-particles"></canvas>
+
+  <!-- Floating code / binary glyphs (DOM, animated via CSS) -->
+  <div class="glyph-field" id="glyphField" aria-hidden="true"></div>
+
+  <div class="scene">
+
+    <!-- ============ LOGIN CARD ============ -->
+    <main class="portal-card" id="portalCard">
+      <div class="card-border-glow" aria-hidden="true"></div>
+
+      <header class="portal-header">
+        <div class="emblem" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="emblem-svg">
+            <defs>
+              <linearGradient id="emblemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#F4C740"/>
+                <stop offset="100%" stop-color="#2FA84F"/>
+              </linearGradient>
+            </defs>
+            <polygon points="60,6 111,33 111,87 60,114 9,87 9,33"
+                     fill="none" stroke="url(#emblemGrad)" stroke-width="2.5"/>
+            <polygon points="60,22 97,41 97,79 60,98 23,79 23,41"
+                     fill="none" stroke="#2FA84F" stroke-width="1" opacity="0.5"/>
+            <path d="M46 48 L36 60 L46 72" fill="none" stroke="#F4C740" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M74 48 L84 60 L74 72" fill="none" stroke="#F4C740" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="66" y1="44" x2="54" y2="76" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="42" y="78" width="36" height="4" rx="2" fill="#2FA84F" opacity="0.8"/>
+            <circle cx="60" cy="60" r="3" fill="#F4C740"/>
+          </svg>
+        </div>
+
+        <h1 class="school-name">
+          <span class="line">Computer Science</span>
+          <span class="line">High School <em>of</em> Bicolandia</span>
+        </h1>
+        <p class="subtitle">
+          <span class="subtitle-bracket">&lt;</span>
+          Student Digital Portal
+          <span class="subtitle-bracket">/&gt;</span>
+        </p>
+      </header>
+
+      <form class="portal-form" id="portalForm" autocomplete="off">
+
+        <!-- NAME -->
+        <div class="field" data-field="name">
+          <div class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4.4 0-8 2.24-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.76-3.6-5-8-5Z"/></svg>
+          </div>
+          <input type="text" id="nameInput" name="name" required placeholder=" " />
+          <label for="nameInput">Full Name</label>
+          <span class="field-pulse-border" aria-hidden="true"></span>
+          <span class="field-underline" aria-hidden="true"></span>
+        </div>
+
+        <!-- LRN -->
+        <div class="field" data-field="lrn">
+          <div class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm3 3h2v2H7V8Zm0 4h2v2H7v-2Zm4-4h6v2h-6V8Zm0 4h6v2h-6v-2Z"/></svg>
+          </div>
+          <input type="text" id="lrnInput" name="lrn" required inputmode="numeric" placeholder=" " maxlength="12" />
+          <label for="lrnInput">LRN (Learner Reference Number)</label>
+          <span class="field-pulse-border" aria-hidden="true"></span>
+          <span class="field-underline" aria-hidden="true"></span>
+          <span class="field-scanline" aria-hidden="true"></span>
+        </div>
+
+        <!-- GRADE LEVEL -->
+        <div class="field field-select" data-field="grade">
+          <div class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3 1 8l11 5 9-4.09V17h2V8L12 3Zm-7 8.09V15c0 2.21 3.13 4 7 4s7-1.79 7-4v-3.91l-7 3.18-7-3.18Z"/></svg>
+          </div>
+          <select id="gradeInput" name="grade" required>
+            <option value="" disabled selected hidden></option>
+            <option value="7">Grade 7</option>
+            <option value="8">Grade 8</option>
+            <option value="9">Grade 9</option>
+            <option value="10">Grade 10</option>
+            <option value="11">Grade 11</option>
+            <option value="12">Grade 12</option>
+          </select>
+          <label for="gradeInput">Grade Level</label>
+          <span class="field-pulse-border" aria-hidden="true"></span>
+          <span class="field-underline" aria-hidden="true"></span>
+        </div>
+
+        <!-- LOGIN BUTTON -->
+        <button type="submit" class="start-btn" id="startBtn">
+          <span class="btn-glow" aria-hidden="true"></span>
+          <span class="btn-border" aria-hidden="true"></span>
+          <span class="btn-content">
+            <span class="btn-text">START JOURNEY</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+          </span>
+          <span class="btn-loader" aria-hidden="true">
+            <span class="loader-ring"></span>
+            <span class="btn-loader-text">AUTHENTICATING</span>
+          </span>
+          <span class="btn-ripple" id="btnRipple" aria-hidden="true"></span>
+        </button>
+
+        <p class="form-footnote">Enter your credentials to access your student dashboard</p>
+      </form>
+    </main>
+    <!-- ============ /LOGIN CARD ============ -->
+
+  </div>
+
+  <script src="Log in.js"></script>
+</body>
+</html>
