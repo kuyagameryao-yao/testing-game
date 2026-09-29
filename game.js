@@ -1,565 +1,397 @@
-/* =========================================================
-   SIGNAL — Audio Typing Trainer
-   ========================================================= */
-(() => {
-  'use strict';
+/* ==========================================================
+   ProtoType — Desktop Edition
+   Listening/typing accuracy game
+   ========================================================== */
 
-  /* -------------------- Content bank -------------------- */
-  const CHALLENGES = [
-    { text: "keyboard", weight: 1 },
-    { text: "focus", weight: 1 },
-    { text: "listen carefully", weight: 1 },
-    { text: "practice makes progress", weight: 1 },
-    { text: "typing speed", weight: 1 },
-    { text: "accuracy matters", weight: 1 },
-    { text: "the quick brown fox", weight: 2 },
-    { text: "reaction time", weight: 1 },
-    { text: "hand eye coordination", weight: 2 },
-    { text: "stay calm and type", weight: 2 },
-    { text: "research project", weight: 1 },
-    { text: "sound and rhythm", weight: 2 },
-    { text: "every word counts", weight: 2 },
-    { text: "consistent practice builds skill", weight: 3 },
-    { text: "the students studied quietly", weight: 3 },
-    { text: "curiosity drives learning", weight: 2 },
-    { text: "type exactly what you hear", weight: 3 },
-    { text: "small steps, steady progress", weight: 3 },
-    { text: "listening builds focus", weight: 2 },
-    { text: "the class begins at noon", weight: 3 },
-  ];
+/* ---------- Sentence banks ---------- */
+const SENTENCES = {
+    easy: [
+        "The cat sat on the mat.",
+        "I like to eat pizza.",
+        "She walks to school every day.",
+        "The sun is bright today.",
+        "We watched a movie last night.",
+        "He plays soccer on weekends.",
+        "The dog ran across the yard.",
+        "Please close the door quietly.",
+        "My favorite color is blue.",
+        "They live near the park."
+    ],
+    medium: [
+        "The quick brown fox jumps over the lazy dog.",
+        "Learning to type accurately takes consistent practice.",
+        "She carefully organized the files before the meeting.",
+        "The weather forecast predicts heavy rain this weekend.",
+        "Our flight was delayed because of a mechanical issue.",
+        "He whispered the answer so no one else could hear.",
+        "The museum exhibit featured artifacts from ancient Egypt.",
+        "Remember to save your work before closing the program.",
+        "The chef added a pinch of salt to balance the flavor.",
+        "Traffic was unusually light on the way to the office."
+    ],
+    hard: [
+        "Despite the overwhelming complexity of the negotiations, both parties reached a tentative agreement.",
+        "The archaeologist meticulously catalogued each fragment before it could deteriorate further.",
+        "Quantum entanglement remains one of the most counterintuitive phenomena in modern physics.",
+        "The committee’s recommendations were ultimately overshadowed by unforeseen budgetary constraints.",
+        "Her thesis examined the socioeconomic ramifications of rapid urbanization in coastal regions.",
+        "The orchestra’s rendition of the symphony was praised for its nuanced interpretation.",
+        "Bureaucratic inefficiencies continued to hinder the rollout of the new infrastructure policy.",
+        "The novelist wove together multiple timelines to create a richly layered narrative.",
+        "Engineers had to recalibrate the satellite’s trajectory after an unexpected gravitational anomaly.",
+        "The debate over renewable energy subsidies exposed deep partisan divisions."
+    ]
+};
 
-  /* -------------------- State -------------------- */
-  const state = {
-    screen: 'menu',
-    settings: {
-      music: 40, sfx: 70, voice: 100,
-      animations: true, reducedMotion: false, highContrast: false,
-    },
-    round: {
-      active: false,
-      current: null,
-      score: 0,
-      combo: 0,
-      bestCombo: 0,
-      correct: 0,
-      mistakes: 0,
-      charsTyped: 0,
-      startTime: 0,
-      timeLeft: 60,
-      timerId: null,
-      audioPlaying: false,
-    }
-  };
+/* ---------- State ---------- */
+let currentLevel = "easy";
+let currentSentence = "";
+let currentAnswer = "";
+let hasPlayed = false;
+let streak = 0;
+let played = 0;
+let bestWpm = 0;
+let sentenceStartTime = null;
+let isSpeaking = false;
+let submissionLocked = false;
+let isDarkMode = false;
 
-  const ROUND_SECONDS = 60;
 
-  /* -------------------- DOM refs -------------------- */
-  const $ = (sel) => document.querySelector(sel);
-  const screens = document.querySelectorAll('[data-screen]');
 
-  const el = {
-    audioStatus: $('#audioStatus'),
-    audioStatusText: $('#audioStatusText'),
-    audioDot: $('#audioDot'),
-    waveform: $('#waveform'),
-    btnReplay: $('#btnReplay'),
-    typeForm: $('#typeForm'),
-    typeInput: $('#typeInput'),
-    typeLabel: $('#typeLabel'),
-    charCounter: $('#charCounter'),
-    btnSubmit: $('#btnSubmit'),
-    feedbackLine: $('#feedbackLine'),
-    statScore: $('#statScore'),
-    statWpm: $('#statWpm'),
-    statAccuracy: $('#statAccuracy'),
-    statCombo: $('#statCombo'),
-    statTime: $('#statTime'),
-    statCorrect: $('#statCorrect'),
-    statMistakes: $('#statMistakes'),
-    comboCard: $('#comboCard'),
-    timerCard: $('#timerCard'),
-  };
+/* ---------- DOM references ---------- */
+const diffButtons = document.querySelectorAll(".diff-btn");
+const playBtn = document.getElementById("playBtn");
+const replayBtn = document.getElementById("replayBtn");
+const typing = document.getElementById("typing");
+const checkBtn = document.getElementById("checkBtn");
+const resultEl = document.getElementById("result");
+const streakEl = document.getElementById("streak");
+const bestWpmEl = document.getElementById("bestWpm");
+const playedEl = document.getElementById("played");
+const leaderboardEl = document.getElementById("leaderboard");
+const clearBtn = document.getElementById("clearLeaderboard");
+const body = document.body;
 
-  /* =========================================================
-     Screen navigation
-     ========================================================= */
-  function showScreen(name) {
-    state.screen = name;
-    screens.forEach(s => {
-      const isTarget = s.id === `screen-${name}`;
-      s.classList.toggle('screen--active', isTarget);
+
+/* ---------- Helpers ---------- */
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function normalize(str) {
+    return str.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function animateTextSwap(el, html) {
+    el.classList.add("content-fade");
+    setTimeout(() => {
+        el.innerHTML = html;
+        el.classList.remove("content-fade");
+    }, 120);
+}
+
+function triggerInputState(isCorrect) {
+    typing.classList.remove("success-flash", "error-shake");
+    void typing.offsetWidth;
+    typing.classList.add(isCorrect ? "success-flash" : "error-shake");
+}
+
+function setLocked(locked) {
+    submissionLocked = locked;
+    checkBtn.disabled = locked;
+    playBtn.disabled = locked;
+    replayBtn.disabled = locked || replayBtn.disabled;
+    diffButtons.forEach(btn => btn.disabled = locked);
+    typing.disabled = locked;
+}
+
+function getCorrectAnswer() {
+    return currentAnswer || currentSentence;
+}
+
+function extractExpectedAnswer(sentence) {
+    return sentence.trim().replace(/\s+/g, " ").split(" ")[0];
+}
+
+/* ---------- Difficulty selection ---------- */
+diffButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (submissionLocked) return;
+        diffButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentLevel = btn.dataset.level;
+        resetRound();
     });
-  }
+});
 
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const action = btn.dataset.action;
-    switch (action) {
-      case 'play': startRound(); break;
-      case 'how-to-play': showScreen('how'); break;
-      case 'settings': showScreen('settings'); break;
-      case 'back-to-menu': endRoundCleanup(); showScreen('menu'); break;
-      case 'play-again': startRound(); break;
-    }
-  });
+/* ---------- Speech synthesis ---------- */
+function speak(text) {
+    return new Promise(resolve => {
+        if (!("speechSynthesis" in window)) {
+            resolve();
+            return;
+        }
 
-  /* =========================================================
-     Audio: synthesized SFX via WebAudio
-     ========================================================= */
-  let actx = null;
-  function getCtx() {
-    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-    return actx;
-  }
+        window.speechSynthesis.cancel();
 
-  function playTone(freq, duration, type = 'sine', gainScale = 1) {
-    if (state.settings.sfx <= 0) return;
-    try {
-      const ctx = getCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.value = freq;
-      const vol = (state.settings.sfx / 100) * 0.18 * gainScale;
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + duration + 0.02);
-    } catch (err) { /* audio unavailable — fail silently */ }
-  }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.lang = "en-US";
 
-  function sfxCorrect() {
-    playTone(523.25, 0.12, 'sine', 1);
-    setTimeout(() => playTone(783.99, 0.18, 'sine', 0.9), 90);
-  }
-  function sfxIncorrect() {
-    playTone(196, 0.22, 'sawtooth', 0.7);
-  }
-  function sfxCombo() {
-    playTone(987.77, 0.14, 'triangle', 0.6);
-  }
-  function sfxClick() {
-    playTone(660, 0.06, 'square', 0.35);
-  }
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.btn')) sfxClick();
-  });
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => /en/i.test(v.lang) && /female|natural|google/i.test(v.name)) || voices.find(v => /en/i.test(v.lang));
+        if (voice) utterance.voice = voice;
 
-  /* =========================================================
-     Audio: speech synthesis dictation
-     ========================================================= */
-  const synth = window.speechSynthesis;
+        utterance.onend = () => resolve();
+        utterance.onerror = () => resolve();
 
-  function speakChallenge(text, onEnd) {
-    if (!synth) { onEnd && onEnd(); return; }
-    synth.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 0.92;
-    utter.pitch = 1;
-    utter.volume = state.settings.voice / 100;
-
-    setAudioState('playing');
-    state.round.audioPlaying = true;
-
-    utter.onend = () => {
-      state.round.audioPlaying = false;
-      setAudioState('ready');
-      onEnd && onEnd();
-    };
-    utter.onerror = () => {
-      state.round.audioPlaying = false;
-      setAudioState('ready');
-      onEnd && onEnd();
-    };
-    synth.speak(utter);
-  }
-
-  function setAudioState(mode) {
-    el.audioStatus.classList.remove('is-playing', 'is-ready');
-    el.waveform.classList.remove('is-active');
-    if (mode === 'playing') {
-      el.audioStatus.classList.add('is-playing');
-      el.audioStatusText.textContent = '🔊 LISTENING…';
-      el.waveform.classList.add('is-active');
-    } else if (mode === 'ready') {
-      el.audioStatus.classList.add('is-ready');
-      el.audioStatusText.textContent = '⌨ TYPE WHAT YOU HEARD';
-    } else {
-      el.audioStatusText.textContent = 'Get ready…';
-    }
-  }
-
-  el.btnReplay.addEventListener('click', () => {
-    if (!state.round.active || !state.round.current) return;
-    speakChallenge(state.round.current.text);
-  });
-
-  /* =========================================================
-     Round lifecycle
-     ========================================================= */
-  function startRound() {
-    Object.assign(state.round, {
-      active: true,
-      current: null,
-      score: 0,
-      combo: 0,
-      bestCombo: 0,
-      correct: 0,
-      mistakes: 0,
-      charsTyped: 0,
-      startTime: Date.now(),
-      timeLeft: ROUND_SECONDS,
+        window.speechSynthesis.speak(utterance);
     });
-    updateHud();
-    el.comboCard.classList.remove('combo-hot');
-    el.timerCard.classList.remove('timer-low');
-    showScreen('game');
-    startTimer();
-    nextChallenge();
-  }
+}
 
-  function startTimer() {
-    clearInterval(state.round.timerId);
-    state.round.timerId = setInterval(() => {
-      state.round.timeLeft = Math.max(0, state.round.timeLeft - 0.1);
-      el.statTime.textContent = state.round.timeLeft.toFixed(1);
-      if (state.round.timeLeft <= 10) {
-        el.timerCard.classList.add('timer-low');
-      }
-      if (state.round.timeLeft <= 0) {
-        finishRound();
-      }
-    }, 100);
-  }
+function pickSentence() {
+    const list = SENTENCES[currentLevel];
+    return list[Math.floor(Math.random() * list.length)];
+}
 
-  function pickChallenge() {
-    const pool = CHALLENGES;
-    const totalWeight = pool.reduce((sum, c) => sum + c.weight, 0);
-    let r = Math.random() * totalWeight;
-    for (const c of pool) {
-      r -= c.weight;
-      if (r <= 0) return c;
+function resetRound() {
+    hasPlayed = false;
+    currentSentence = "";
+    currentAnswer = "";
+    typing.value = "";
+    replayBtn.disabled = true;
+    resultEl.classList.add("hidden");
+    resultEl.innerHTML = "";
+    typing.focus();
+}
+
+/* ---------- Play / Replay ---------- */
+playBtn.addEventListener("click", () => {
+    if (submissionLocked) return;
+    currentSentence = pickSentence();
+    currentAnswer = extractExpectedAnswer(currentSentence);
+    speak(currentSentence);
+    hasPlayed = true;
+    replayBtn.disabled = false;
+    sentenceStartTime = Date.now();
+    typing.value = "";
+    resultEl.classList.add("hidden");
+    typing.focus();
+});
+
+replayBtn.addEventListener("click", () => {
+    if (currentSentence && !submissionLocked) {
+        speak(currentSentence);
+        typing.focus();
     }
-    return pool[0];
-  }
+});
 
-  function nextChallenge() {
-    if (!state.round.active) return;
-    const challenge = pickChallenge();
-    state.round.current = challenge;
-    el.typeInput.value = '';
-    el.typeInput.disabled = true;
-    el.btnSubmit.disabled = true;
-    el.charCounter.textContent = '0 characters';
-    el.feedbackLine.textContent = '';
-    el.feedbackLine.className = 'feedback-line';
-    el.typeInput.classList.remove('state-correct', 'state-incorrect');
+/* ---------- Accuracy calculation ---------- */
+function calculateAccuracy(typed, target) {
+    const typedWords = typed.trim().split(/\s+/).filter(Boolean);
+    const targetWords = target.trim().split(/\s+/).filter(Boolean);
+    const len = Math.max(typedWords.length, targetWords.length);
+    if (len === 0) return 100;
 
-    speakChallenge(challenge.text, () => {
-      if (!state.round.active) return;
-      el.typeInput.disabled = false;
-      el.btnSubmit.disabled = false;
-      el.typeInput.focus();
-    });
-  }
+    let correct = 0;
+    for (let i = 0; i < len; i++) {
+        if (typedWords[i] && targetWords[i] && typedWords[i].toLowerCase() === targetWords[i].toLowerCase()) {
+            correct++;
+        }
+    }
+    return Math.round((correct / len) * 100);
+}
 
-  function finishRound() {
-    state.round.active = false;
-    clearInterval(state.round.timerId);
-    synth && synth.cancel();
-    showResults();
-  }
+/* ---------- Check answer ---------- */
+checkBtn.addEventListener("click", checkAnswer);
 
-  function endRoundCleanup() {
-    state.round.active = false;
-    clearInterval(state.round.timerId);
-    synth && synth.cancel();
-    setAudioState('idle');
-  }
+async function checkAnswer() {
+    if (submissionLocked) return;
 
-  /* =========================================================
-     Input handling
-     ========================================================= */
-  el.typeInput.addEventListener('input', () => {
-    const len = el.typeInput.value.length;
-    el.charCounter.textContent = `${len} character${len === 1 ? '' : 's'}`;
-  });
+    if (!hasPlayed || !currentSentence) {
+        resultEl.className = "result-card error";
+        animateTextSwap(resultEl, `
+            <h3>⚠️ Play a sentence first</h3>
+            <div class="details">Click "Play Sentence" before checking your answer.</div>
+        `);
+        resultEl.classList.remove("hidden");
+        return;
+    }
 
-  el.typeForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (el.typeInput.disabled) return;
-    submitAnswer();
-  });
+    setLocked(true);
 
-  function normalize(str) {
-    return str.trim().replace(/\s+/g, ' ').toLowerCase();
-  }
+    const typed = typing.value;
+    const expectedAnswer = getCorrectAnswer();
+    const elapsedMs = Date.now() - (sentenceStartTime || Date.now());
+    const elapsedMinutes = Math.max(elapsedMs / 60000, 0.01);
+    const wordCount = currentSentence.trim().split(/\s+/).filter(Boolean).length;
+    const wpm = Math.round(wordCount / elapsedMinutes);
+    const accuracy = calculateAccuracy(typed, currentSentence);
+    const isCorrect = normalize(typed) === normalize(currentSentence);
 
-  function submitAnswer() {
-    const typed = el.typeInput.value;
-    const expected = state.round.current.text;
-    const isCorrect = normalize(typed) === normalize(expected);
+    played++;
+    if (isCorrect) streak++;
+    else streak = 0;
 
-    state.round.charsTyped += expected.length;
-    el.typeInput.disabled = true;
-    el.btnSubmit.disabled = true;
+    if (wpm > bestWpm && isCorrect) bestWpm = wpm;
+
+    updateStats();
+    saveStats();
+
+    resultEl.classList.remove("hidden");
 
     if (isCorrect) {
-      handleCorrect();
+        resultEl.className = "result-card success";
+        animateTextSwap(resultEl, `
+            <h3>✅ Correct!</h3>
+            <div class="details">${wpm} WPM • ${accuracy}% accuracy</div>
+        `);
+        triggerInputState(true);
+        addScore({ wpm, accuracy, level: currentLevel, time: (elapsedMs / 1000).toFixed(1) });
+        await speak(["Correct!", "Excellent!", "Well done!"][Math.floor(Math.random() * 3)]);
     } else {
-      handleIncorrect(expected);
+        resultEl.className = "result-card error";
+        animateTextSwap(resultEl, `
+            <h3>❌ Incorrect</h3>
+            <div class="details">${accuracy}% accuracy</div>
+            <div class="correct-sentence">${escapeHtml(currentSentence)}</div>
+        `);
+        triggerInputState(false);
+        await speak(`Incorrect. The correct answer is ${expectedAnswer}.`);
+        await wait(2200);
     }
 
-    setTimeout(() => {
-      if (state.round.active) nextChallenge();
-    }, 900);
-  }
+    hasPlayed = false;
+    replayBtn.disabled = true;
+    typing.value = "";
+    resultEl.classList.add("hidden");
+    resetRound();
+    setLocked(false);
+}
 
-  function handleCorrect() {
-    state.round.correct++;
-    state.round.combo++;
-    state.round.bestCombo = Math.max(state.round.bestCombo, state.round.combo);
+/* ---------- Stats persistence ---------- */
+function updateStats() {
+    streakEl.textContent = streak;
+    bestWpmEl.textContent = bestWpm;
+    playedEl.textContent = played;
+}
 
-    const multiplier = 1 + Math.floor(state.round.combo / 5) * 0.5;
-    const points = Math.round(10 * multiplier);
-    animateScoreTo(state.round.score + points);
-    state.round.score += points;
+function saveStats() {
+    localStorage.setItem("echo_pc_stats", JSON.stringify({ streak, played, bestWpm }));
+}
 
-    el.typeInput.classList.add('state-correct');
-    el.feedbackLine.textContent = 'CORRECT!';
-    el.feedbackLine.className = 'feedback-line show-correct';
-
-    sfxCorrect();
-    if (state.round.combo > 0 && state.round.combo % 5 === 0) sfxCombo();
-
-    firePulse('success');
-    burstParticles(el.feedbackLine, 'var(--success)');
-
-    if (state.round.combo >= 5) {
-      el.comboCard.classList.add('combo-hot');
+function loadStats() {
+    const raw = localStorage.getItem("echo_pc_stats");
+    if (raw) {
+        try {
+            const data = JSON.parse(raw);
+            streak = data.streak || 0;
+            played = data.played || 0;
+            bestWpm = data.bestWpm || 0;
+        } catch (e) {
+            streak = 0;
+            played = 0;
+            bestWpm = 0;
+        }
     }
-    updateHud();
-  }
+    updateStats();
+}
 
-  function handleIncorrect(expected) {
-    state.round.mistakes++;
-    state.round.combo = 0;
-    el.comboCard.classList.remove('combo-hot');
-
-    el.typeInput.classList.add('state-incorrect');
-    el.feedbackLine.textContent = `INCORRECT — correct answer: "${expected}"`;
-    el.feedbackLine.className = 'feedback-line show-incorrect';
-
-    sfxIncorrect();
-    firePulse('error');
-    updateHud();
-  }
-
-  /* =========================================================
-     HUD updates
-     ========================================================= */
-  function animateScoreTo(target) {
-    const start = state.round.score;
-    const diff = target - start;
-    const duration = 320;
-    const startTime = performance.now();
-    function step(now) {
-      const p = Math.min(1, (now - startTime) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      el.statScore.textContent = Math.round(start + diff * eased);
-      if (p < 1) requestAnimationFrame(step);
+/* ---------- Leaderboard ---------- */
+function getLeaderboard() {
+    const raw = localStorage.getItem("echo_pc_leaderboard");
+    if (!raw) return [];
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        return [];
     }
-    requestAnimationFrame(step);
-  }
+}
 
-  function updateHud() {
-    el.statScore.textContent = state.round.score;
-    el.statCombo.textContent = `×${state.round.combo}`;
-    el.statCorrect.textContent = state.round.correct;
-    el.statMistakes.textContent = state.round.mistakes;
-
-    const elapsedMin = Math.max((Date.now() - state.round.startTime) / 60000, 1 / 600);
-    const wordsTyped = state.round.charsTyped / 5;
-    const wpm = Math.round(wordsTyped / elapsedMin);
-    el.statWpm.textContent = Number.isFinite(wpm) ? Math.max(0, wpm) : 0;
-
-    const totalAttempts = state.round.correct + state.round.mistakes;
-    const accuracy = totalAttempts === 0 ? 100 : Math.round((state.round.correct / totalAttempts) * 100);
-    el.statAccuracy.textContent = `${accuracy}%`;
-  }
-
-  /* =========================================================
-     Visual effects: screen pulse + particles
-     ========================================================= */
-  function firePulse(kind) {
-    if (!state.settings.animations) return;
-    const pulse = document.createElement('div');
-    pulse.className = `screen-pulse fire-${kind}`;
-    document.body.appendChild(pulse);
-    setTimeout(() => pulse.remove(), 550);
-  }
-
-  function burstParticles(anchorEl, color) {
-    if (!state.settings.animations) return;
-    const rect = anchorEl.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const count = 10;
-    for (let i = 0; i < count; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle-burst';
-      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-      const dist = 40 + Math.random() * 40;
-      p.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
-      p.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
-      p.style.left = `${cx}px`;
-      p.style.top = `${cy}px`;
-      p.style.background = color;
-      document.body.appendChild(p);
-      setTimeout(() => p.remove(), 750);
-    }
-  }
-
-  /* =========================================================
-     Results screen
-     ========================================================= */
-  function showResults() {
-    const r = state.round;
-    const elapsedMin = Math.max((Date.now() - r.startTime) / 60000, ROUND_SECONDS / 60);
-    const wordsTyped = r.charsTyped / 5;
-    const wpm = Math.max(0, Math.round(wordsTyped / elapsedMin));
-    const totalAttempts = r.correct + r.mistakes;
-    const accuracy = totalAttempts === 0 ? 0 : Math.round((r.correct / totalAttempts) * 100);
-
-    $('#finalScore').textContent = r.score;
-    $('#resWpm').textContent = wpm;
-    $('#resAccuracy').textContent = `${accuracy}%`;
-    $('#resCorrect').textContent = r.correct;
-    $('#resWrong').textContent = r.mistakes;
-    $('#resCombo').textContent = `×${r.bestCombo}`;
-
-    const rating = getRating(wpm, accuracy);
-    $('#ratingLetter').textContent = rating.letter;
-    $('#ratingLabel').textContent = rating.label;
-    const badge = $('#ratingBadge');
-    badge.style.background = rating.gradient;
-
-    showScreen('results');
-  }
-
-  function getRating(wpm, accuracy) {
-    const score = wpm * 0.6 + accuracy * 0.4;
-    if (accuracy >= 90 && wpm >= 35) {
-      return { letter: 'S', label: 'Excellent', gradient: 'linear-gradient(135deg, #ffc857, #ff9a3c)' };
-    }
-    if (score >= 55) {
-      return { letter: 'A', label: 'Great', gradient: 'linear-gradient(135deg, #7c5cff, #22d3ee)' };
-    }
-    if (score >= 35) {
-      return { letter: 'B', label: 'Good', gradient: 'linear-gradient(135deg, #2fe3ac, #22d3ee)' };
-    }
-    return { letter: 'C', label: 'Keep Practicing', gradient: 'linear-gradient(135deg, #9aa0b4, #626a82)' };
-  }
-
-  /* =========================================================
-     Settings
-     ========================================================= */
-  function bindSlider(id, key) {
-    const input = document.getElementById(id);
-    const valEl = document.querySelector(`[data-val-for="${id}"]`);
-    input.addEventListener('input', () => {
-      state.settings[key] = Number(input.value);
-      valEl.textContent = `${input.value}%`;
+function addScore({ wpm, accuracy, level, time }) {
+    const board = getLeaderboard();
+    board.push({
+        wpm,
+        accuracy,
+        level,
+        time,
+        date: new Date().toLocaleDateString()
     });
-  }
-  bindSlider('sldMusic', 'music');
-  bindSlider('sldSfx', 'sfx');
-  bindSlider('sldVoice', 'voice');
+    board.sort((a, b) => b.wpm - a.wpm);
+    const top = board.slice(0, 10);
+    localStorage.setItem("echo_pc_leaderboard", JSON.stringify(top));
+    renderLeaderboard();
+}
 
-  function bindToggle(id, onChange) {
-    const btn = document.getElementById(id);
-    btn.addEventListener('click', () => {
-      const isOn = btn.dataset.state === 'on';
-      const next = !isOn;
-      btn.dataset.state = next ? 'on' : 'off';
-      btn.setAttribute('aria-checked', String(next));
-      onChange(next);
-    });
-  }
-  bindToggle('chkAnim', (on) => {
-    state.settings.animations = on;
-    document.body.classList.toggle('no-animations', !on);
-  });
-  bindToggle('chkReduced', (on) => {
-    state.settings.reducedMotion = on;
-    document.body.classList.toggle('reduced-motion', on);
-  });
-  bindToggle('chkHighContrast', (on) => {
-    state.settings.highContrast = on;
-    document.body.classList.toggle('theme-contrast', on);
-  });
-
-  /* =========================================================
-     Ambient particle canvas (main menu background)
-     ========================================================= */
-  const canvas = document.getElementById('particleCanvas');
-  const ctx2d = canvas.getContext('2d');
-  let particles = [];
-  let rafId = null;
-
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  function initParticles() {
-    particles = Array.from({ length: 40 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.6 + 0.4,
-      vy: -(Math.random() * 0.25 + 0.05),
-      vx: (Math.random() - 0.5) * 0.08,
-      alpha: Math.random() * 0.5 + 0.15,
-      hue: Math.random() > 0.5 ? '124,92,255' : '34,211,238',
-    }));
-  }
-  initParticles();
-
-  function tickParticles() {
-    if (!state.settings.animations) {
-      ctx2d.clearRect(0, 0, canvas.width, canvas.height);
-      rafId = requestAnimationFrame(tickParticles);
-      return;
+function renderLeaderboard() {
+    const board = getLeaderboard();
+    if (board.length === 0) {
+        leaderboardEl.innerHTML = `<p class="empty">No scores yet. Be the first!</p>`;
+        return;
     }
-    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
-    for (const p of particles) {
-      p.y += p.vy;
-      p.x += p.vx;
-      if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
-      if (p.x < -10) p.x = canvas.width + 10;
-      if (p.x > canvas.width + 10) p.x = -10;
-      ctx2d.beginPath();
-      ctx2d.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx2d.fillStyle = `rgba(${p.hue},${p.alpha})`;
-      ctx2d.fill();
+    leaderboardEl.innerHTML = board.map((entry, i) => `
+        <div class="leaderboard-item">
+            <div class="rank">${i + 1}</div>
+            <div class="info">
+                <div class="wpm">${entry.wpm} WPM</div>
+                <div class="meta">${entry.accuracy}% • ${entry.time}s • ${entry.level} • ${entry.date}</div>
+            </div>
+        </div>
+    `).join("");
+}
+
+clearBtn.addEventListener("click", () => {
+    if (confirm("Clear the entire leaderboard?")) {
+        localStorage.removeItem("echo_pc_leaderboard");
+        renderLeaderboard();
     }
-    rafId = requestAnimationFrame(tickParticles);
-  }
-  tickParticles();
+});
 
-  /* -------------------- Respect OS reduced motion -------------------- */
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.body.classList.add('reduced-motion');
-    document.getElementById('chkReduced').dataset.state = 'on';
-    document.getElementById('chkReduced').setAttribute('aria-checked', 'true');
-    state.settings.reducedMotion = true;
-  }
+/* ---------- Keyboard shortcuts ---------- */
+document.addEventListener("keydown", (e) => {
+    if (submissionLocked) return;
+    if (document.activeElement === typing) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            checkAnswer();
+        }
+        return;
+    }
+    if (e.code === "Space") {
+        e.preventDefault();
+        playBtn.click();
+    } else if (e.key.toLowerCase() === "r") {
+        if (!replayBtn.disabled) replayBtn.click();
+    }
+});
 
-  /* Init */
-  showScreen('menu');
-})();
+/* ---------- Dark Mode Toggle ---------- */
+const darkModeToggle = document.createElement('div');
+darkModeToggle.classList.add('dark-mode-toggle');
+darkModeToggle.innerHTML = '<i></i>';
+body.appendChild(darkModeToggle);
+
+darkModeToggle.addEventListener('click', () => {
+    isDarkMode = !isDarkMode;
+    body.classList.toggle('dark');
+    darkModeToggle.querySelector('i').classList.toggle('fa-moon');
+    darkModeToggle.querySelector('i').classList.toggle('fa-sun');
+    localStorage.setItem('darkMode', isDarkMode);
+});
+const savedDarkMode = localStorage.getItem('darkMode');
+if (savedDarkMode !== null) {
+    isDarkMode = savedDarkMode === 'true';
+    body.classList.toggle('dark', isDarkMode);
+}
+
+/* ---------- Init ---------- */
+loadStats();
+renderLeaderboard();
+typing.focus();
