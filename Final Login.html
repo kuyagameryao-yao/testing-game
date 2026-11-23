@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in System</title>
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+    
+/* =========================================================
+   TOKENS: COLOR PALETTE + FONT FAMILIES
+   ========================================================= */
+
+:root {
+    --blue: #084973;
+    --teal: #078D8C;
+    --green: #67944B;
+    --yellow: #FFC20A;
+    --orange: #F3620F;
+    --red: #DA0D1E;
+    --ink: #052a44;
+
+    --display: "Arial Black", "Trebuchet MS", Impact, sans-serif;
+    --body: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+}
+
+
+/* =========================================================
+   GLOBAL STYLES
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: var(--body);
+    color: #fff;
+
+    background: linear-gradient(
+        140deg,
+        var(--blue) 0%,
+        #063553 55%,
+        #06596e 100%
+    );
+
+    overflow-x: hidden;
+}
+
+
+/* =========================================================
+   BACKGROUND: BLOBS, GRAIN, PARTICLES, FLOATING OBJECTS
+   ========================================================= */
+
+.bg {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.5;
+
+    animation: blob 26s ease-in-out infinite alternate;
+}
+
+.b1 {
+    width: 46vmax;
+    height: 46vmax;
+    left: -12vmax;
+    top: -14vmax;
+    background: var(--teal);
+}
+
+.b2 {
+    width: 34vmax;
+    height: 34vmax;
+    right: -8vmax;
+    top: 20%;
+    background: var(--orange);
+    opacity: 0.32;
+    animation-duration: 32s;
+}
+
+.b3 {
+    width: 38vmax;
+    height: 38vmax;
+    left: 30%;
+    bottom: -20vmax;
+    background: var(--green);
+    opacity: 0.35;
+    animation-duration: 38s;
+}
+
+.b4 {
+    width: 22vmax;
+    height: 22vmax;
+    right: 22%;
+    top: -8vmax;
+    background: var(--red);
+    opacity: 0.22;
+    animation-duration: 30s;
+}
+
+
+/* Background Blob Animation */
+
+@keyframes blob {
+    to {
+        translate: 8vw 6vh;
+        scale: 1.15;
+    }
+}
+
+
+/* Grain Texture */
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0.09;
+    mix-blend-mode: overlay;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+
+/* Floating Particles */
+
+.dust span {
+    position: absolute;
+    bottom: -12px;
+    left: var(--l);
+
+    width: var(--s);
+    height: var(--s);
+
+    background: var(--c);
+    opacity: 0.55;
+
+    animation: rise var(--d) linear var(--dl) infinite;
+}
+
+.dust span:nth-child(3n) {
+    border-radius: 50%;
+}
+
+
+/* Particle Animation */
+
+@keyframes rise {
+    to {
+        translate: var(--sx) -112vh;
+    }
+}
+
+
+/* Floating Object Layers */
+
+.layer {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+}
+
+.far .obj {
+    opacity: 0.5;
+}
+
+.near .obj {
+    opacity: 0.92;
+}
+
+.obj {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+
+    width: var(--w);
+    height: var(--w);
+
+    overflow: visible;
+
+    animation:
+        drift var(--d) ease-in-out infinite alternate,
+        tilt var(--d) ease-in-out infinite alternate;
+}
+
+.obj.spin {
+    animation:
+        drift var(--d) ease-in-out infinite alternate,
+        turn 50s linear infinite;
+}
+
+.obj.blink {
+    animation:
+        drift var(--d) ease-in-out infinite alternate,
+        blink 2.4s steps(2) infinite;
+}
+
+
+/* Object Animations */
+
+@keyframes drift {
+    to {
+        translate: var(--dx) var(--dy);
+    }
+}
+
+@keyframes tilt {
+    from {
+        rotate: calc(var(--t) * -1);
+    }
+
+    to {
+        rotate: var(--t);
+    }
+}
+
+@keyframes turn {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0.12;
+    }
+}
+
+
+/* =========================================================
+   MAIN LAYOUT + HEADER
+   ========================================================= */
+
+.stage {
+    position: relative;
+    z-index: 2;
+
+    min-height: 100vh;
+
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1.6rem;
+
+    padding: 2rem 1rem;
+}
+
+.head {
+    text-align: center;
+}
+
+
+/* School Badge */
+
+.school {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+
+    margin: 0 0 0.9rem;
+    padding: 0.4rem 1rem;
+
+    border-radius: 99px;
+
+    font-weight: 700;
+    color: #ffe08a;
+
+    background: rgba(255, 194, 10, 0.14);
+    border: 1px solid rgba(255, 194, 10, 0.5);
+}
+
+.school::before {
+    content: "";
+
+    width: 10px;
+    height: 10px;
+
+    background: var(--yellow);
+    box-shadow: 3px 3px 0 var(--orange);
+}
+
+
+/* Main Heading */
+
+h1 {
+    margin: 0;
+
+    font-family: var(--display);
+    font-weight: 900;
+
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    line-height: 1.05;
+
+    text-shadow:
+        3px 3px 0 var(--red),
+        6px 6px 0 rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================================
+   GLASS CARD
+   ========================================================= */
+
+.card {
+    position: relative;
+
+    width: min(440px, 100%);
+
+    margin-top: 3rem;
+    padding: 0 1.7rem 1.9rem;
+
+    border-radius: 28px;
+
+    background: rgba(6, 45, 72, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    backdrop-filter: blur(18px) saturate(1.3);
+
+    box-shadow:
+        0 24px 60px rgba(2, 20, 35, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+    animation: bob 7s ease-in-out infinite;
+}
+
+
+/* Card Floating Animation */
+
+@keyframes bob {
+    50% {
+        translate: 0 -8px;
+    }
+}
+
+
+/* Card Artwork */
+
+.art {
+    display: block;
+
+    width: 220px;
+    margin: -3.4rem auto 0.3rem;
+
+    overflow: visible;
+
+    filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.2));
+}
+
+.fl {
+    transform-box: fill-box;
+    transform-origin: center;
+
+    animation: fl 4s ease-in-out infinite alternate;
+}
+
+@keyframes fl {
+    to {
+        transform: translateY(-7px) rotate(6deg);
+    }
+}
+
+
+/* =========================================================
+   FORM FIELDS: FLOATING LABELS + FOCUS GLOW
+   ========================================================= */
+
+.field {
+    position: relative;
+    margin-top: 1.1rem;
+}
+
+.field input,
+.sel-btn {
+    display: block;
+
+    width: 100%;
+    height: 58px;
+
+    padding: 22px 46px 0 48px;
+
+    font: inherit;
+    font-size: 1.08rem;
+    line-height: 36px;
+
+    color: #fff;
+
+    background: rgba(5, 42, 68, 0.7);
+
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px;
+
+    cursor: text;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.sel-btn {
+    cursor: pointer;
+    user-select: none;
+}
+
+
+/* Input Focus Effects */
+
+.field input:focus,
+.sel-btn:focus-visible,
+.open .sel-btn {
+    outline: 0;
+
+    border-color: var(--yellow);
+
+    box-shadow:
+        0 0 0 4px rgba(255, 194, 10, 0.28),
+        0 0 22px rgba(255, 194, 10, 0.35);
+}
+
+
+/* Floating Labels */
+
+.field label,
+.lbl {
+    position: absolute;
+
+    left: 48px;
+    top: 17px;
+
+    color: #d3ebf0;
+
+    pointer-events: none;
+    transform-origin: left;
+
+    transition:
+        top 0.2s,
+        font-size 0.2s,
+        color 0.2s;
+}
+
+.field input:focus ~ label,
+.field input:not(:placeholder-shown) ~ label,
+.field:focus-within .lbl,
+.has-value .lbl,
+.open .lbl {
+    top: 8px;
+
+    font-size: 0.76rem;
+    color: var(--yellow);
+}
+
+.btn .lbl {
+    position: static;
+}
+
+
+/* Input Icons */
+
+.ico {
+    position: absolute;
+
+    left: 14px;
+    top: 17px;
+
+    width: 24px;
+    height: 24px;
+
+    color: var(--yellow);
+}
+
+
+/* Dropdown Arrow */
+
+.chev {
+    position: absolute;
+
+    right: 14px;
+    top: 17px;
+
+    width: 24px;
+    height: 24px;
+
+    color: #fff;
+
+    transition: rotate 0.25s;
+}
+
+.open .chev {
+    rotate: 180deg;
+}
+
+
+/* Invalid Fields */
+
+.invalid input,
+.invalid .sel-btn {
+    border-color: var(--red);
+
+    box-shadow: 0 0 0 3px rgba(218, 13, 30, 0.35);
+}
+
+
+/* Error Message */
+
+.err {
+    margin: 0.4rem 0.2rem 0;
+
+    color: #ffb3b8;
+
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.err:empty {
+    display: none;
+}
+
+
+/* =========================================================
+   DROPDOWN LIST
+   ========================================================= */
+
+.opts {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    top: calc(100% + 8px);
+
+    z-index: 5;
+
+    margin: 0;
+    padding: 6px;
+
+    list-style: none;
+
+    background: #06304d;
+
+    border: 2px solid var(--yellow);
+    border-radius: 14px;
+
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateY(-8px) scale(0.97);
+    transform-origin: top;
+
+    transition:
+        opacity 0.2s,
+        transform 0.2s,
+        visibility 0.2s;
+}
+
+
+/* Dropdown Open State */
+
+.open .opts {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+
+
+/* Dropdown Options */
+
+.opts li {
+    padding: 12px 14px;
+
+    border-radius: 9px;
+
+    font-size: 1.05rem;
+
+    cursor: pointer;
+}
+
+.opts li.act,
+.opts li:hover {
+    background: var(--yellow);
+    color: var(--ink);
+}
+
+.opts li[aria-selected=true]::after {
+    content: "\2713";
+
+    float: right;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+   ========================================================= */
+
+.btn {
+    position: relative;
+
+    width: 100%;
+    height: 60px;
+
+    margin-top: 1.6rem;
+
+    border: 0;
+    border-radius: 16px;
+
+    overflow: hidden;
+    cursor: pointer;
+
+    font-family: var(--display);
+    font-size: 1.15rem;
+    letter-spacing: 0.14em;
+
+    color: var(--ink);
+    background: var(--yellow);
+
+    box-shadow:
+        0 6px 0 var(--orange),
+        0 14px 24px rgba(0, 0, 0, 0.3);
+
+    transition:
+        transform 0.15s,
+        box-shadow 0.15s,
+        filter 0.15s;
+}
+
+
+/* Button Shine Effect */
+
+.btn::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+        100deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 70%
+    );
+
+    translate: -120% 0;
+
+    transition: translate 0.6s;
+}
+
+
+/* Button Hover */
+
+.btn:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 9px 0 var(--orange),
+        0 18px 28px rgba(0, 0, 0, 0.35);
+
+    filter: brightness(1.05);
+}
+
+.btn:hover::after {
+    translate: 120% 0;
+}
+
+
+/* Button Active */
+
+.btn:active {
+    transform: translateY(4px) scale(0.98);
+
+    box-shadow: 0 2px 0 var(--orange);
+}
+
+
+/* Keyboard Focus */
+
+.btn:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 4px;
+}
+
+
+/* Loading Dots */
+
+.dots {
+    position: absolute;
+    inset: 0;
+
+    display: none;
+    grid-auto-flow: column;
+    gap: 8px;
+
+    place-content: center;
+}
+
+.dots i {
+    width: 12px;
+    height: 12px;
+
+    background: var(--ink);
+
+    animation: hop 0.8s steps(4) infinite;
+}
+
+.dots i:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.dots i:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+
+/* Loading Animation */
+
+@keyframes hop {
+    50% {
+        translate: 0 -10px;
+    }
+}
+
+.loading {
+    cursor: progress;
+}
+
+.loading .dots {
+    display: grid;
+}
+
+.loading .lbl {
+    visibility: hidden;
+}
+
+
+/* Shake Animation */
+
+.shake {
+    animation: shake 0.4s;
+}
+
+@keyframes shake {
+    25% {
+        translate: -8px 0;
+    }
+
+    75% {
+        translate: 8px 0;
+    }
+}
+
+
+/* =========================================================
+   SUCCESS STATE
+   ========================================================= */
+
+.success {
+    padding: 1.4rem 0 0.2rem;
+
+    text-align: center;
+
+    animation: pop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.success[hidden] {
+    display: none;
+}
+
+.success:focus {
+    outline: 0;
+}
+
+
+/* Success Heading */
+
+.success h2 {
+    margin: 0.8rem 0 0.3rem;
+
+    font-family: var(--display);
+    font-size: 1.7rem;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* Success Message */
+
+.success p {
+    margin: 0 0 1.3rem;
+
+    font-size: 1.1rem;
+    color: #ffe08a;
+}
+
+
+/* Success Icon */
+
+.ok {
+    width: 84px;
+}
+
+.ok path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+
+    animation: draw 0.5s 0.3s forwards;
+}
+
+
+/* Confetti */
+
+.confetti {
+    position: absolute;
+
+    left: 50%;
+    top: 40%;
+
+    width: 10px;
+    height: 10px;
+
+    pointer-events: none;
+
+    animation: burst 1.2s ease-out forwards;
+}
+
+
+/* Success Animations */
+
+@keyframes pop {
+    from {
+        opacity: 0;
+        scale: 0.85;
+    }
+}
+
+@keyframes draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes burst {
+    to {
+        translate: var(--cx) var(--cy);
+        rotate: 360deg;
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .card {
+        padding: 0 1.1rem 1.5rem;
+    }
+
+    .art {
+        width: 180px;
+    }
+
+    .obj {
+        width: calc(var(--w) * 0.55);
+        height: calc(var(--w) * 0.55);
+
+        opacity: 0.4 !important;
+    }
+
+    .obj.h {
+        display: none;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION ACCESSIBILITY
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     ORIGINAL RETRO ILLUSTRATIONS
+     ========================================================= -->
+
+<svg width="0" height="0"
+     style="position:absolute"
+     aria-hidden="true">
+
+<defs>
+
+  <!-- Cassette -->
+  <symbol id="cassette" viewBox="0 0 64 48">
+    <rect width="64" height="48" rx="6" fill="#FFC20A"/>
+    <rect x="6" y="6" width="52" height="24" rx="3" fill="#084973"/>
+    <circle cx="20" cy="18" r="6" fill="#FFC20A"/>
+    <circle cx="44" cy="18" r="6" fill="#FFC20A"/>
+    <rect x="14" y="35" width="36" height="8" rx="2" fill="#F3620F"/>
+  </symbol>
+
+  <!-- Vinyl -->
+  <symbol id="vinyl" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="31" fill="#052a44"/>
+    <circle cx="32" cy="32" r="22"
+            fill="none"
+            stroke="#67944B"
+            stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="11" fill="#DA0D1E"/>
+    <circle cx="32" cy="32" r="2.5" fill="#FFC20A"/>
+    <path d="M12 20A24 24 0 0 1 24 10"
+          stroke="#fff"
+          stroke-opacity=".45"
+          stroke-width="2"
+          fill="none"/>
+  </symbol>
+
+  <!-- Handheld -->
+  <symbol id="handheld" viewBox="0 0 40 64">
+    <rect width="40" height="64" rx="8" fill="#F3620F"/>
+    <rect x="5" y="6" width="30" height="24" rx="3" fill="#052a44"/>
+    <rect x="9" y="10" width="22" height="16" fill="#67944B"/>
+
+    <path d="M8 43h12M14 37v12"
+          stroke="#fff"
+          stroke-width="4"/>
+
+    <circle cx="29" cy="46" r="3.5" fill="#FFC20A"/>
+    <circle cx="33" cy="38" r="3.5" fill="#DA0D1E"/>
+
+    <rect x="14" y="56"
+          width="12"
+          height="3"
+          rx="1.5"
+          fill="#052a44"/>
+  </symbol>
+
+  <!-- Game Pad -->
+  <symbol id="pad" viewBox="0 0 64 36">
+    <rect width="64" height="36" rx="16" fill="#078D8C"/>
+
+    <path d="M14 18h14M21 11v14"
+          stroke="#fff"
+          stroke-width="5"/>
+
+    <circle cx="44" cy="23" r="4" fill="#FFC20A"/>
+    <circle cx="52" cy="14" r="4" fill="#DA0D1E"/>
+  </symbol>
+
+  <!-- Chip -->
+  <symbol id="chip" viewBox="0 0 48 48">
+
+    <path d="
+      M12 0v8
+      M24 0v8
+      M36 0v8
+      M12 40v8
+      M24 40v8
+      M36 40v8
+      M0 12h8
+      M0 24h8
+      M0 36h8
+      M40 12h8
+      M40 24h8
+      M40 36h8"
+      stroke="#FFC20A"
+      stroke-width="3"/>
+
+    <rect x="8" y="8"
+          width="32"
+          height="32"
+          rx="4"
+          fill="#052a44"
+          stroke="#67944B"
+          stroke-width="2"/>
+
+    <rect x="18" y="18"
+          width="12"
+          height="12"
+          fill="#67944B"/>
+  </symbol>
+
+  <!-- Retro PC -->
+  <symbol id="pc"
+          viewBox="0 0 64 64"
+          shape-rendering="crispEdges">
+
+    <rect x="8" y="4"
+          width="48"
+          height="38"
+          fill="#eadfc4"/>
+
+    <rect x="14" y="10"
+          width="36"
+          height="26"
+          fill="#084973"/>
+
+    <rect x="18" y="14"
+          width="8"
+          height="4"
+          fill="#FFC20A"/>
+
+    <rect x="18" y="22"
+          width="22"
+          height="4"
+          fill="#67944B"/>
+
+    <rect x="18" y="29"
+          width="6"
+          height="3"
+          fill="#fff"/>
+
+    <rect x="22" y="42"
+          width="20"
+          height="6"
+          fill="#eadfc4"/>
+
+    <rect x="10" y="48"
+          width="44"
+          height="9"
+          fill="#eadfc4"/>
+
+    <rect x="36" y="51"
+          width="14"
+          height="3"
+          fill="#F3620F"/>
+  </symbol>
+
+  <!-- Book -->
+  <symbol id="book" viewBox="0 0 48 40">
+
+    <path d="
+      M2 4h20
+      a4 4 0 0 1 2 1
+      v33
+      a4 4 0 0 0-2-1
+      H2z
+
+      M46 4H26
+      a4 4 0 0 0-2 1
+      v33
+      a4 4 0 0 1 2-1
+      h20z"
+      fill="#fff"/>
+
+    <path d="M6 12h14M6 19h14M6 26h10"
+          stroke="#078D8C"
+          stroke-width="2.5"/>
+
+    <path d="M28 12h14M28 19h14"
+          stroke="#F3620F"
+          stroke-width="2.5"/>
+  </symbol>
+
+  <!-- Pixel -->
+  <symbol id="px"
+          viewBox="0 0 5 5"
+          shape-rendering="crispEdges">
+
+    <path d="
+      M2 0h1
+      v2h2
+      v1H3
+      v2H2
+      V3H0V2h2z"
+      fill="currentColor"/>
+  </symbol>
+
+</defs>
+</svg>
+
+
+<!-- =========================================================
+     LIVING ANIMATED BACKGROUND
+     ========================================================= -->
+
+<div class="bg" aria-hidden="true">
+
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+
+  <div class="dust" id="dust"></div>
+
+  <div class="layer far" data-depth="0.5"></div>
+  <div class="layer near" data-depth="1.6"></div>
+
+</div>
+
+
+<!-- =========================================================
+     MAIN CONTENT
+     ========================================================= -->
+
+<main class="stage">
+
+  <!-- HEADER -->
+  <header class="head">
+
+    <p class="school">
+      Sunrise Academy Computer Lab
+    </p>
+
+    <h1>
+      Log in System
+    </h1>
+
+  </header>
+
+
+  <!-- =======================================================
+       LOGIN CARD
+       ======================================================= -->
+
+  <section class="card" id="card">
+
+
+    <!-- Decorative Retro Computer -->
+
+    <svg class="art"
+         viewBox="0 0 220 110"
+         aria-hidden="true">
+
+      <use href="#pc"
+           x="72"
+           y="12"
+           width="80"
+           height="80"/>
+
+      <use class="fl"
+           href="#book"
+           x="14"
+           y="34"
+           width="44"
+           height="37"
+           style="animation-delay:-1s"/>
+
+      <use class="fl"
+           href="#chip"
+           x="168"
+           y="18"
+           width="34"
+           height="34"
+           style="animation-delay:-2.5s"/>
+
+      <use class="fl"
+           href="#cassette"
+           x="156"
+           y="64"
+           width="44"
+           height="33"
+           style="animation-delay:-.5s"/>
+
+      <use class="fl"
+           href="#px"
+           x="52"
+           y="8"
+           width="12"
+           height="12"
+           style="
+             color:#FFC20A;
+             animation-delay:-3s
+           "/>
+
+      <use class="fl"
+           href="#px"
+           x="30"
+           y="84"
+           width="9"
+           height="9"
+           style="
+             color:#F3620F;
+             animation-delay:-2s
+           "/>
+
+    </svg>
+
+
+    <!-- =====================================================
+         LOGIN FORM
+         ===================================================== -->
+
+    <form id="form" novalidate>
+
+
+      <!-- NAME -->
+
+      <div class="field" id="nameField">
+
+        <svg class="ico"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             aria-hidden="true">
+
+          <circle cx="12"
+                  cy="8"
+                  r="4"/>
+
+          <path d="
+            M4 21
+            c0-4 4-6 8-6
+            s8 2 8 6"/>
+
+        </svg>
+
+
+        <input
+          id="name"
+          type="text"
+          placeholder=" "
+          maxlength="40"
+          autocomplete="off"
+          aria-describedby="nameErr"
+          required
+        >
+
+        <label for="name">
+          Name
+        </label>
+
+      </div>
+
+
+      <p class="err"
+         id="nameErr"
+         role="alert">
+      </p>
+
+
+      <!-- ===================================================
+           GRADE LEVEL
+           =================================================== -->
+
+      <div class="field" id="grade">
+
+        <svg class="ico"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             aria-hidden="true">
+
+          <path d="
+            M2 9
+            l10-5
+            10 5
+            -10 5z"/>
+
+          <path d="
+            M6 11
+            v5
+            c3 2.500
+            9 2.500
+            12 0
+            v-5"/>
+
+        </svg>
+
+
+        <div
+          class="sel-btn"
+          id="gradeBtn"
+          role="combobox"
+          tabindex="0"
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          aria-controls="gradeList"
+          aria-labelledby="gradeLbl gradeVal"
+          aria-describedby="gradeErr">
+
+          <span id="gradeVal"></span>
+
+        </div>
+
+
+        <span class="lbl"
+              id="gradeLbl">
+          Grade Level
+        </span>
+
+
+        <svg class="chev"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2.5"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             aria-hidden="true">
+
+          <path d="M6 9l6 6 6-6"/>
+
+        </svg>
+
+
+        <!-- OPTIONS -->
+
+        <ul
+          class="opts"
+          id="gradeList"
+          role="listbox"
+          aria-labelledby="gradeLbl">
+
+          <li id="g7"
+              role="option"
+              data-v="7">
+            Grade 7
+          </li>
+
+          <li id="g8"
+              role="option"
+              data-v="8">
+            Grade 8
+          </li>
+
+          <li id="g9"
+              role="option"
+              data-v="9">
+            Grade 9
+          </li>
+
+          <li id="g10"
+              role="option"
+              data-v="10">
+            Grade 10
+          </li>
+
+        </ul>
+
+      </div>
+
+
+      <p class="err"
+         id="gradeErr"
+         role="alert">
+      </p>
+
+
+      <!-- ===================================================
+           LOGIN BUTTON
+           =================================================== -->
+
+      <button
+        class="btn"
+        id="loginBtn"
+        type="submit">
+
+        <span class="lbl">
+          LOGIN
+        </span>
+
+        <span
+          class="dots"
+          aria-hidden="true">
+
+          <i></i>
+          <i></i>
+          <i></i>
+
+        </span>
+
+      </button>
+
+    </form>
+
+
+    <!-- =====================================================
+         SUCCESS SCREEN
+         ===================================================== -->
+
+    <div
+      class="success"
+      id="success"
+      hidden
+      tabindex="-1">
+
+      <svg
+        class="ok"
+        viewBox="0 0 64 64"
+        aria-hidden="true">
+
+        <circle
+          cx="32"
+          cy="32"
+          r="29"
+          fill="#67944B"/>
+
+        <path
+          d="M19 33l9 9 17-19"
+          fill="none"
+          stroke="#fff"
+          stroke-width="6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          pathLength="1"/>
+
+      </svg>
+
+
+      <h2 id="wName"></h2>
+
+      <p id="wGrade"></p>
+
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script>
+    /* =========================================================
+   HELPERS
+   ========================================================= */
+
+const $ = s => document.querySelector(s);
+
+const r = (a, b) =>
+  a + Math.random() * (b - a);
+
+
+/* =========================================================
+   COLOR PALETTE
+   ========================================================= */
+
+const COLORS = [
+  '#F3620F',
+  '#FFC20A',
+  '#67944B',
+  '#078D8C',
+  '#DA0D1E'
+];
+
+
+/* =========================================================
+   BACKGROUND OBJECTS
+   ========================================================= */
+
+const OBJECTS = [
+
+  ['vinyl', 3, 58, 170, 0, 'spin'],
+
+  ['cassette', 76, 6, 120, 0],
+
+  ['chip', 88, 66, 70, 0, 'h'],
+
+  ['book', 44, 78, 80, 0, 'h'],
+
+
+  ['handheld', 10, 10, 80, 1],
+
+  ['pad', 80, 36, 110, 1],
+
+  ['pc', 72, 74, 100, 1],
+
+  ['vinyl', 30, 86, 70, 1, 'spin h'],
+
+  ['cassette', 3, 36, 90, 1, 'h'],
+
+  ['chip', 46, 4, 60, 1],
+
+  ['px', 20, 50, 26, 1, 'blink'],
+
+  ['px', 92, 22, 22, 1, 'blink h'],
+
+  ['px', 60, 90, 20, 1, 'blink']
+
+];
+
+
+const layers = [
+  ...document.querySelectorAll('.layer')
+];
+
+const NS = 'http://www.w3.org/2000/svg';
+
+
+/* =========================================================
+   CREATE BACKGROUND OBJECTS
+   ========================================================= */
+
+OBJECTS.forEach(
+  ([id, x, y, w, l, cls = '']) => {
+
+    const svg =
+      document.createElementNS(NS, 'svg');
+
+    const use =
+      document.createElementNS(NS, 'use');
+
+
+    use.setAttribute(
+      'href',
+      '#' + id
+    );
+
+
+    svg.appendChild(use);
+
+
+    svg.setAttribute(
+      'class',
+      'obj ' + cls
+    );
+
+
+    svg.style.cssText = `
+
+      --x:${x}%;
+
+      --y:${y}%;
+
+      --w:${w}px;
+
+      --d:${r(22, 40)}s;
+
+      --dx:${r(-40, 40)}px;
+
+      --dy:${r(-50, 50)}px;
+
+      --t:${r(6, 14)}deg;
+
+      animation-delay:
+      ${-r(0, 30)}s,
+      ${-r(0, 30)}s;
+
+    `;
+
+
+    /* Random color for pixel objects */
+
+    if (id === 'px') {
+
+      svg.style.color =
+        COLORS[
+          Math.floor(r(0, 5))
+        ];
+
+    }
+
+
+    layers[l].appendChild(svg);
+
+  }
+);
+
+
+/* =========================================================
+   FLOATING PARTICLES
+   ========================================================= */
+
+const dust = $('#dust');
+
+
+for (let i = 0; i < 26; i++) {
+
+  const p =
+    document.createElement('span');
+
+
+  p.style.cssText = `
+
+    --l:${r(0, 100)}%;
+
+    --s:${r(4, 9)}px;
+
+    --c:${COLORS[i % 5]};
+
+    --d:${r(14, 30)}s;
+
+    --dl:${-r(0, 30)}s;
+
+    --sx:${r(-60, 60)}px;
+
+  `;
+
+
+  dust.appendChild(p);
+
+}
+
+
+/* =========================================================
+   MOUSE PARALLAX
+   ========================================================= */
+
+let tx = 0;
+let ty = 0;
+
+let cx = 0;
+let cy = 0;
+
+let running = false;
+
+
+const still =
+  matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+
+function follow() {
+
+  cx += (tx - cx) * 0.06;
+
+  cy += (ty - cy) * 0.06;
+
+
+  layers.forEach(layer => {
+
+    layer.style.transform =
+      `translate(
+        ${cx * layer.dataset.depth}px,
+        ${cy * layer.dataset.depth}px
+      )`;
+
+  });
+
+
+  running =
+    Math.abs(tx - cx) +
+    Math.abs(ty - cy) > 0.05;
+
+
+  if (running) {
+
+    requestAnimationFrame(follow);
+
+  }
+
+}
+
+
+addEventListener(
+  'pointermove',
+  e => {
+
+    if (still) return;
+
+
+    tx =
+      (e.clientX / innerWidth - 0.5)
+      * -30;
+
+
+    ty =
+      (e.clientY / innerHeight - 0.5)
+      * -30;
+
+
+    if (!running) {
+
+      running = true;
+
+      requestAnimationFrame(follow);
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   ERROR HANDLING
+   ========================================================= */
+
+function setErr(field, errId, msg) {
+
+  $(errId).textContent =
+    msg ? '\u26A0 ' + msg : '';
+
+
+  field.classList.toggle(
+    'invalid',
+    !!msg
+  );
+
+
+  const control =
+    field.querySelector(
+      'input,.sel-btn'
+    );
+
+
+  if (control) {
+
+    control.setAttribute(
+      'aria-invalid',
+      !!msg
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   GRADE DROPDOWN
+   ========================================================= */
+
+const gradeBox =
+  $('#grade');
+
+const gradeBtn =
+  $('#gradeBtn');
+
+const opts =
+  [...$('#gradeList').children];
+
+
+let grade = '';
+
+let act = 0;
+
+
+const isOpen = () =>
+  gradeBox.classList.contains('open');
+
+
+/* ---------------------------------------------------------
+   Active option
+   --------------------------------------------------------- */
+
+function setAct(i) {
+
+  act =
+    (i + opts.length)
+    % opts.length;
+
+
+  opts.forEach(
+    (o, k) => {
+
+      o.classList.toggle(
+        'act',
+        k === act
+      );
+
+    }
+  );
+
+
+  gradeBtn.setAttribute(
+    'aria-activedescendant',
+    opts[act].id
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   Open dropdown
+   --------------------------------------------------------- */
+
+function openList() {
+
+  gradeBox.classList.add('open');
+
+  gradeBtn.setAttribute(
+    'aria-expanded',
+    'true'
+  );
+
+
+  setAct(
+    Math.max(
+      0,
+      opts.findIndex(
+        o => o.dataset.v === grade
+      )
+    )
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   Close dropdown
+   --------------------------------------------------------- */
+
+function closeList() {
+
+  gradeBox.classList.remove(
+    'open'
+  );
+
+
+  gradeBtn.setAttribute(
+    'aria-expanded',
+    'false'
+  );
+
+
+  gradeBtn.removeAttribute(
+    'aria-activedescendant'
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   Select grade
+   --------------------------------------------------------- */
+
+function pick(o) {
+
+  grade =
+    o.dataset.v;
+
+
+  $('#gradeVal').textContent =
+    o.textContent;
+
+
+  gradeBox.classList.add(
+    'has-value'
+  );
+
+
+  opts.forEach(
+    x => x.setAttribute(
+      'aria-selected',
+      x === o
+    )
+  );
+
+
+  setErr(
+    gradeBox,
+    '#gradeErr',
+    ''
+  );
+
+
+  closeList();
+
+
+  gradeBtn.focus();
+
+}
+
+
+/* ---------------------------------------------------------
+   Dropdown click
+   --------------------------------------------------------- */
+
+gradeBtn.onclick = () => {
+
+  isOpen()
+    ? closeList()
+    : openList();
+
+};
+
+
+/* ---------------------------------------------------------
+   Dropdown keyboard
+   --------------------------------------------------------- */
+
+gradeBtn.onkeydown = e => {
+
+  if (
+    e.key === 'ArrowDown' ||
+    e.key === 'ArrowUp'
+  ) {
+
+    e.preventDefault();
+
+
+    if (isOpen()) {
+
+      setAct(
+        act +
+        (
+          e.key === 'ArrowDown'
+            ? 1
+            : -1
+        )
+      );
+
+    } else {
+
+      openList();
+
+    }
+
+  }
+
+
+  else if (
+    e.key === 'Enter' ||
+    e.key === ' '
+  ) {
+
+    e.preventDefault();
+
+
+    if (isOpen()) {
+
+      pick(
+        opts[act]
+      );
+
+    } else {
+
+      openList();
+
+    }
+
+  }
+
+
+  else if (
+    e.key === 'Escape' ||
+    e.key === 'Tab'
+  ) {
+
+    closeList();
+
+  }
+
+};
+
+
+/* ---------------------------------------------------------
+   Click an option
+   --------------------------------------------------------- */
+
+opts.forEach(
+  o => {
+
+    o.onclick = () => {
+
+      pick(o);
+
+    };
+
+  }
+);
+
+
+/* ---------------------------------------------------------
+   Close dropdown outside
+   --------------------------------------------------------- */
+
+document.addEventListener(
+  'click',
+  e => {
+
+    if (
+      !gradeBox.contains(e.target)
+    ) {
+
+      closeList();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   LOGIN FLOW
+   ========================================================= */
+
+const form =
+  $('#form');
+
+const nameIn =
+  $('#name');
+
+const nameField =
+  $('#nameField');
+
+const btn =
+  $('#loginBtn');
+
+const ok =
+  $('#success');
+
+
+/* ---------------------------------------------------------
+   Clear name error while typing
+   --------------------------------------------------------- */
+
+nameIn.addEventListener(
+  'input',
+  () => {
+
+    setErr(
+      nameField,
+      '#nameErr',
+      ''
+    );
+
+  }
+);
+
+
+/* =========================================================
+   LOGIN SUBMIT
+   ========================================================= */
+
+form.addEventListener(
+  'submit',
+  e => {
+
+    e.preventDefault();
+
+
+    /* -----------------------------------------------
+       Get user information
+       ----------------------------------------------- */
+
+    const name =
+      nameIn.value
+        .trim()
+        .replace(/\s+/g, ' ');
+
+
+    /* -----------------------------------------------
+       Validate name
+       ----------------------------------------------- */
+
+    setErr(
+      nameField,
+      '#nameErr',
+
+      name.length < 2
+        ? 'Enter your name (at least 2 letters).'
+        : ''
+    );
+
+
+    /* -----------------------------------------------
+       Validate grade
+       ----------------------------------------------- */
+
+    setErr(
+      gradeBox,
+      '#gradeErr',
+
+      grade
+        ? ''
+        : 'Choose your grade level.'
+    );
+
+
+    /* -----------------------------------------------
+       Stop if invalid
+       ----------------------------------------------- */
+
+    if (
+      name.length < 2 ||
+      !grade
+    ) {
+
+      form.classList.remove(
+        'shake'
+      );
+
+
+      void form.offsetWidth;
+
+
+      form.classList.add(
+        'shake'
+      );
+
+
+      (
+        name.length < 2
+          ? nameIn
+          : gradeBtn
+      ).focus();
+
+
+      return;
+
+    }
+
+
+    /* -----------------------------------------------
+       Start loading animation
+       ----------------------------------------------- */
+
+    btn.classList.add(
+      'loading'
+    );
+
+
+    btn.disabled = true;
+
+
+    btn.setAttribute(
+      'aria-busy',
+      'true'
+    );
+
+
+    /* -----------------------------------------------
+       Save user information
+       ----------------------------------------------- */
+
+    localStorage.setItem(
+      'studentName',
+      name
+    );
+
+
+    localStorage.setItem(
+      'studentGrade',
+      grade
+    );
+
+
+    /* -----------------------------------------------
+       Create an anonymous research participant code
+       ----------------------------------------------- */
+    const randomPart = (window.crypto && typeof window.crypto.randomUUID === 'function')
+      ? window.crypto.randomUUID().replace(/-/g, '').slice(0, 10)
+      : Math.random().toString(36).slice(2, 12);
+
+    localStorage.setItem(
+      'participantCode',
+      `P-${randomPart.toUpperCase()}`
+    );
+
+
+    /* -----------------------------------------------
+       Fake login delay
+       ----------------------------------------------- */
+
+    setTimeout(
+      () => {
+
+        /* Hide login form */
+
+        form.hidden = true;
+
+
+        /* Show welcome message */
+
+        $('#wName').textContent =
+          `Welcome, ${name}!`;
+
+
+        $('#wGrade').textContent =
+          `Grade ${grade} — Ready to learn?`;
+
+
+        ok.hidden = false;
+
+
+        ok.focus();
+
+
+        /* Confetti */
+
+        burst();
+
+
+        /* -------------------------------------------
+           OPEN GAME.HTML
+           
+           Wait 1.8 seconds so the user can see
+           the success animation first.
+           ------------------------------------------- */
+
+        setTimeout(
+          () => {
+
+            window.location.href =
+              'Final Game.html';
+
+          },
+          1800
+        );
+
+      },
+      1500
+    );
+
+  }
+);
+
+
+/* =========================================================
+   PIXEL CONFETTI
+   ========================================================= */
+
+function burst() {
+
+  for (let i = 0; i < 24; i++) {
+
+    const c =
+      document.createElement('i');
+
+
+    const a =
+      r(0, 6.28);
+
+
+    const d =
+      r(90, 230);
+
+
+    c.className =
+      'confetti';
+
+
+    c.style.cssText = `
+
+      background:
+      ${COLORS[i % 5]};
+
+      --cx:
+      ${Math.cos(a) * d}px;
+
+      --cy:
+      ${Math.sin(a) * d}px;
+
+    `;
+
+
+    $('#card').appendChild(c);
+
+
+    setTimeout(
+      () => c.remove(),
+      1300
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   OPTIONAL: CHECK IF GAME PAGE RETURNS TO LOGIN
+   ========================================================= */
+
+/*
+   Your game.html can access the saved information:
+
+   localStorage.getItem('studentName')
+   localStorage.getItem('studentGrade')
+
+   Example:
+
+   const name = localStorage.getItem('studentName');
+   const grade = localStorage.getItem('studentGrade');
+
+*/
+
+
+/* =========================================================
+   PAGE LOAD
+   ========================================================= */
+
+window.addEventListener(
+  'DOMContentLoaded',
+  () => {
+
+    nameIn.focus();
+
+  }
+);
+</script>
+
+</body>
+</html>
