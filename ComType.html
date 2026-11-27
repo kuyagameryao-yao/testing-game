@@ -1,0 +1,3316 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audio Typing Quest</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   AUDIO TYPING QUEST
+   Retro Computer Lab Theme
+========================================================= */
+
+:root {
+  --n: #083B5B;
+  --dt: #075B70;
+  --ot: #087C83;
+  --bt: #079B9D;
+  --y: #FFC20A;
+  --o: #F36B21;
+  --r: #D91F32;
+  --sb: #B9D9E8;
+
+  --b1: #075B70;
+  --b2: #083B5B;
+  --b3: #2c3150;
+  --card: #083B5Bcc;
+
+  --sh: 0 10px 30px #0007;
+  --font: Fredoka, "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --b1: #04212f;
+  --b2: #051a2b;
+  --b3: #14122b;
+  --card: #051f33e8;
+}
+
+[data-theme="sun"] {
+  --b1: #087C83;
+  --b2: #075B70;
+  --b3: #6b4a2a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font);
+  color: #fff;
+  min-height: 100vh;
+  background: linear-gradient(
+    125deg,
+    var(--b1),
+    var(--b2) 50%,
+    var(--b3),
+    var(--b2)
+  );
+  background-size: 300% 300%;
+  animation: gm 30s ease infinite;
+}
+
+@keyframes gm {
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+h1 {
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+  text-shadow: 3px 3px 0 var(--r);
+}
+
+h2 {
+  margin-bottom: 10px;
+  color: var(--y);
+}
+
+p {
+  line-height: 1.5;
+}
+
+/* =========================================================
+   BACKGROUND DECORATIONS
+========================================================= */
+
+.bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 95% 75%, #7a6a3e66, transparent 45%),
+    radial-gradient(ellipse at 88% 8%, #4a3a6a55, transparent 40%);
+}
+
+.bg > * {
+  position: absolute;
+}
+
+.bg > svg {
+  animation: fl 16s infinite ease-in-out;
+  transform: rotate(var(--r));
+}
+
+@keyframes fl {
+  50% {
+    transform: translateY(-26px) rotate(calc(var(--r) + 8deg));
+  }
+}
+
+.dsc {
+  border-radius: 50%;
+  border: 5px solid transparent;
+  border-top-color: #9bbfb0;
+  background:
+    radial-gradient(circle, var(--r) 0 16%, #8a8a3a 17% 20%, #0a3552 21%);
+  box-shadow:
+    inset 0 0 0 8px #0a3552,
+    inset 0 0 0 11px #3c7d62;
+  animation: sp 20s linear infinite;
+}
+
+@keyframes sp {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.px {
+  width: 6px;
+  height: 6px;
+  opacity: .55;
+  animation: tw 5s infinite;
+}
+
+.pl {
+  font-size: 26px;
+  font-weight: 700;
+  opacity: .45;
+  animation: tw 7s infinite;
+}
+
+@keyframes tw {
+  50% {
+    opacity: .12;
+    transform: translateY(-10px);
+  }
+}
+
+/* =========================================================
+   VIEWS AND CARDS
+========================================================= */
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+  animation: in .4s;
+}
+
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: blur(8px);
+  border: 2px solid #B9D9E833;
+  border-radius: 28px;
+  padding: 22px;
+  box-shadow: var(--sh);
+  margin-bottom: 18px;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 6px solid var(--y);
+}
+
+.grow {
+  flex: 1;
+  min-width: 200px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 14px;
+  border: 1.5px solid #FFC20A88;
+  border-radius: 99px;
+  background: #FFC20A22;
+  color: #FFE99A;
+  font-size: .9rem;
+  margin-bottom: 6px;
+}
+
+.pill i {
+  width: 11px;
+  height: 11px;
+  background: var(--y);
+  box-shadow: 3px 3px 0 var(--o);
+}
+
+.avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--y);
+  border: 4px solid var(--bt);
+  box-shadow: 0 0 20px #079B9D99;
+  font-size: 2.7rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .2s;
+}
+
+.avatar:hover {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.bnc {
+  animation: bn .6s;
+}
+
+@keyframes bn {
+  40% {
+    transform: scale(1.25) rotate(-12deg);
+  }
+  70% {
+    transform: scale(.95) rotate(8deg);
+  }
+}
+
+.badge {
+  background: var(--y);
+  color: var(--n);
+  padding: 2px 12px;
+  border-radius: 99px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.stat {
+  --c: var(--y);
+  background: #052a43b3;
+  border: 2px solid #B9D9E826;
+  border-top: 5px solid var(--c);
+  border-radius: 20px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: var(--sh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat:nth-child(4n+2) {
+  --c: var(--bt);
+}
+
+.stat:nth-child(4n+3) {
+  --c: var(--o);
+}
+
+.stat:nth-child(4n) {
+  --c: var(--r);
+}
+
+.stat span {
+  font-size: 1.6rem;
+}
+
+.stat b {
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.stat small {
+  color: var(--sb);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.center {
+  text-align: center;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+ol {
+  padding-left: 20px;
+  line-height: 1.9;
+  color: var(--sb);
+}
+
+ol b {
+  color: var(--y);
+}
+
+.hrow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid #B9D9E822;
+  font-size: .92rem;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font: 700 1rem var(--font);
+  letter-spacing: .04em;
+  color: var(--n);
+  background: linear-gradient(#FFD64A, var(--y));
+  box-shadow: 0 5px 0 var(--o), 0 0 18px #FFC20A55;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 var(--o), 0 0 28px #FFC20Aaa;
+}
+
+.btn.alt {
+  background: linear-gradient(var(--bt), var(--ot));
+  color: #fff;
+  box-shadow: 0 5px 0 var(--dt), 0 0 16px #079B9D55;
+}
+
+.btn.alt:hover {
+  box-shadow: 0 8px 0 var(--dt), 0 0 26px #079B9Daa;
+}
+
+.btn.ghost {
+  background: #083B5Bcc;
+  color: #fff;
+  border: 2px solid #B9D9E855;
+  box-shadow: none;
+}
+
+.btn.ghost:hover {
+  border-color: var(--y);
+  box-shadow: 0 0 18px #FFC20A66;
+}
+
+.btn.logout {
+  background: linear-gradient(#e95a6b, #b9162b);
+  color: #fff;
+  box-shadow: 0 5px 0 #781020, 0 0 18px #d91f3244;
+}
+
+.btn.logout:hover {
+  box-shadow: 0 8px 0 #781020, 0 0 24px #d91f3266;
+}
+
+.btn.big {
+  padding: 18px 36px;
+  font-size: 1.25rem;
+}
+
+.btn.sm {
+  padding: 6px 14px;
+  font-size: .85rem;
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+#spBtn {
+  animation: pu 2.2s infinite;
+}
+
+@keyframes pu {
+  50% {
+    box-shadow: 0 5px 0 var(--o), 0 0 38px #FFC20Acc;
+  }
+}
+
+.chip {
+  border: 2px solid var(--bt);
+  background: none;
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font: 700 1.05rem var(--font);
+  cursor: pointer;
+  transition: .15s;
+}
+
+.chip:hover {
+  box-shadow: 0 0 14px #079B9Daa;
+}
+
+.chip.on {
+  background: var(--y);
+  border-color: var(--y);
+  color: var(--n);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--y);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   GAME CONSOLE
+========================================================= */
+
+.console {
+  border: 3px solid #FFC20A66;
+  box-shadow:
+    0 0 0 6px var(--n),
+    var(--sh),
+    inset 0 0 40px #079B9D22;
+}
+
+.cbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: var(--sb);
+  letter-spacing: .12em;
+  font-size: .85rem;
+}
+
+.cbar i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--r);
+  box-shadow: 0 0 8px currentColor;
+}
+
+.cbar i:nth-child(2) {
+  background: var(--y);
+}
+
+.cbar i:nth-child(3) {
+  background: var(--bt);
+}
+
+.cbar b {
+  margin-left: auto;
+}
+
+.bar {
+  height: 14px;
+  background: #052a43;
+  border: 2px solid #B9D9E833;
+  border-radius: 9px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.bar b {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--bt), var(--y), var(--o));
+  transition: width .25s linear;
+}
+
+.stage {
+  position: relative;
+  text-align: center;
+  padding: 8px;
+}
+
+.swap {
+  animation: sw .45s;
+}
+
+@keyframes sw {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.btn.arc {
+  width: 130px;
+  height: 130px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 2.6rem;
+  line-height: 1;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #FFE27A, var(--y) 60%);
+  box-shadow: 0 9px 0 var(--o), 0 0 30px #FFC20A99;
+}
+
+.btn.arc small {
+  font-size: .9rem;
+}
+
+.btn.arc:hover {
+  box-shadow: 0 12px 0 var(--o), 0 0 40px #FFC20Add;
+}
+
+.talk {
+  animation: rg 1s infinite;
+}
+
+@keyframes rg {
+  from {
+    box-shadow: 0 9px 0 var(--o), 0 0 0 0 #FFC20Acc;
+  }
+  to {
+    box-shadow: 0 9px 0 var(--o), 0 0 0 28px #FFC20A00;
+  }
+}
+
+.hint {
+  color: var(--sb);
+  margin: 14px;
+}
+
+#typed {
+  width: 100%;
+  max-width: 520px;
+  padding: 16px;
+  margin: 8px 0;
+  font: 700 1.9rem var(--font);
+  letter-spacing: .06em;
+  text-align: center;
+  color: #fff;
+  background: #052a43;
+  border: 3px solid var(--y);
+  border-radius: 18px;
+  outline: none;
+  box-shadow: 0 0 16px #079B9D88;
+}
+
+#typed:focus {
+  box-shadow: 0 0 0 5px #FFC20A44, 0 0 26px #079B9Dcc;
+}
+
+#typed::placeholder {
+  color: #B9D9E877;
+  font-size: 1rem;
+}
+
+.fb {
+  min-height: 1.6em;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.good {
+  color: var(--y);
+  text-shadow: 0 0 12px #FFC20A;
+}
+
+.bad {
+  color: #ff6b7a;
+}
+
+.pop {
+  animation: pp .5s;
+}
+
+.shake {
+  animation: sh .45s;
+  border-color: var(--r) !important;
+}
+
+@keyframes pp {
+  40% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 6px #FFC20A99, 0 0 40px var(--y);
+  }
+}
+
+@keyframes sh {
+  20%, 60% {
+    transform: translateX(-10px);
+    box-shadow: 0 0 0 5px #D91F3299, 0 0 30px var(--r);
+  }
+  40%, 80% {
+    transform: translateX(10px);
+  }
+}
+
+.bump {
+  animation: bm .4s;
+}
+
+@keyframes bm {
+  50% {
+    transform: scale(1.5);
+    color: var(--y);
+  }
+}
+
+.fp {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--y);
+  text-shadow: 0 3px 0 var(--o);
+  pointer-events: none;
+  animation: up 1s forwards;
+}
+
+@keyframes up {
+  to {
+    transform: translate(-50%, -90px);
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   FORMS
+========================================================= */
+
+.form {
+  max-width: 520px;
+  margin: 0 auto 18px;
+}
+
+.form label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  font-weight: 700;
+}
+
+input,
+select {
+  font: inherit;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px solid #B9D9E844;
+  background: #052a43;
+  color: #fff;
+  accent-color: var(--y);
+}
+
+input[type="checkbox"],
+input[type="range"] {
+  cursor: pointer;
+}
+
+input[type="range"] {
+  max-width: 180px;
+}
+
+.warn {
+  background: #FFC20A22;
+  border: 1px solid var(--y);
+  color: #FFE99A;
+  padding: 12px;
+  border-radius: 14px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+/* =========================================================
+   LOADING SCREEN, RESULTS AND CONFETTI
+========================================================= */
+
+#ld {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: linear-gradient(var(--b2), var(--b1));
+  transition: opacity .5s;
+}
+
+#ld.off {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ldb {
+  width: 220px;
+  height: 18px;
+  border: 3px solid var(--y);
+  border-radius: 4px;
+  margin: 16px auto 8px;
+  overflow: hidden;
+}
+
+.ldb i {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--y) 0 14px,
+    transparent 14px 18px
+  );
+  animation: lb 1s steps(12) forwards;
+}
+
+@keyframes lb {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.trophy {
+  font-size: 4rem;
+  animation: tr 1.2s infinite alternate;
+}
+
+@keyframes tr {
+  to {
+    transform: translateY(-10px) rotate(6deg);
+  }
+}
+
+#cf {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.cf {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  animation: cf 3s linear forwards;
+}
+
+@keyframes cf {
+  to {
+    transform: translateY(110vh) rotate(720deg);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 520px) {
+  main {
+    padding: 12px;
+  }
+
+  .btn.big {
+    padding: 14px 22px;
+    font-size: 1rem;
+  }
+
+  .dsc {
+    display: none;
+  }
+
+  .hero {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .hrow {
+    font-size: .8rem;
+  }
+
+  #typed {
+    font-size: 1.4rem;
+  }
+}
+
+/* =========================================================
+   FRIENDLY HOW-TO BUTTON AND INSTRUCTIONS DIALOG
+========================================================= */
+.how-to-trigger {
+  width: 100%;
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  border: 2px solid #FFC20A88;
+  background: linear-gradient(135deg, #075B70, #083B5B);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.how-to-trigger:hover {
+  transform: translateY(-3px);
+  border-color: var(--y);
+  box-shadow: 0 12px 30px #0005, 0 0 22px #FFC20A33;
+}
+.how-to-trigger:focus-visible {
+  outline: 3px solid var(--y);
+  outline-offset: 4px;
+}
+.how-to-icon {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: #FFC20A22;
+  font-size: 2rem;
+}
+.how-to-copy {
+  flex: 1;
+  display: grid;
+  gap: 5px;
+}
+.how-to-copy strong {
+  color: var(--y);
+  font-size: 1.35rem;
+}
+.how-to-copy span {
+  color: var(--sb);
+  font-size: .98rem;
+  font-weight: 500;
+}
+.how-to-arrow {
+  font-size: 1.8rem;
+  color: var(--y);
+  padding: 0 5px;
+}
+.how-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+  place-items: center;
+  padding: 18px;
+  background: #031522cc;
+  backdrop-filter: blur(7px);
+}
+.how-dialog.open { display: grid; }
+.how-dialog-panel {
+  width: min(100%, 560px);
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  position: relative;
+  padding: 26px;
+  border-radius: 26px;
+  border: 2px solid #FFC20A88;
+  background: linear-gradient(145deg, #075B70, #083B5B 70%);
+  box-shadow: 0 24px 70px #0009;
+  animation: in .22s ease-out;
+}
+.how-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.how-dialog-head h2 {
+  margin: 0 0 5px;
+  font-size: 1.65rem;
+}
+.how-dialog-head p { color: var(--sb); }
+.how-close {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid #B9D9E866;
+  border-radius: 50%;
+  background: #052a43;
+  color: #fff;
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+.how-steps {
+  display: grid;
+  gap: 11px;
+  margin: 20px 0;
+}
+.how-step {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #052a4388;
+  border: 1px solid #B9D9E833;
+}
+.how-step-num {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--y);
+  color: var(--n);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.how-step strong { display: block; color: #fff; margin-bottom: 2px; }
+.how-step span:last-child { color: var(--sb); font-size: .93rem; line-height: 1.4; }
+.how-tip {
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: #FFC20A1c;
+  border: 1px solid #FFC20A88;
+  color: #FFE99A;
+  line-height: 1.5;
+}
+.how-dialog-actions { display: flex; justify-content: center; margin-top: 18px; }
+@media (max-width: 520px) {
+  .how-to-trigger { padding: 17px; gap: 12px; }
+  .how-to-icon { width: 54px; height: 54px; flex-basis: 54px; }
+  .how-to-copy strong { font-size: 1.15rem; }
+  .how-dialog-panel { padding: 20px; }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =======================================================
+     SVG ICONS
+======================================================= -->
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+
+  <symbol id="hh" viewBox="0 0 40 60">
+    <rect width="40" height="60" rx="7" fill="#F36B21"/>
+    <rect x="5" y="5" width="30" height="24" rx="3" fill="#083B5B"/>
+    <rect x="8" y="8" width="24" height="18" fill="#6E9B52"/>
+    <path d="M9 42h12M15 36v12" stroke="#fff" stroke-width="4"/>
+    <circle cx="29" cy="40" r="3" fill="#D91F32"/>
+    <circle cx="33" cy="47" r="3" fill="#FFC20A"/>
+  </symbol>
+
+  <symbol id="cs" viewBox="0 0 60 40">
+    <rect width="60" height="40" rx="5" fill="#FFC20A"/>
+    <rect x="6" y="5" width="48" height="20" rx="4" fill="#083B5B"/>
+    <circle cx="19" cy="15" r="5" fill="#FFC20A"/>
+    <circle cx="41" cy="15" r="5" fill="#FFC20A"/>
+    <rect x="16" y="30" width="28" height="5" rx="2" fill="#F36B21"/>
+  </symbol>
+
+  <symbol id="mo" viewBox="0 0 50 50">
+    <rect x="3" y="2" width="44" height="34" rx="3" fill="#F3E9D2"/>
+    <rect x="8" y="7" width="34" height="23" fill="#083B5B"/>
+    <path d="M12 12h8" stroke="#FFC20A" stroke-width="3"/>
+    <path d="M12 19h16" stroke="#6E9B52" stroke-width="3"/>
+    <rect x="15" y="38" width="20" height="5" fill="#F3E9D2"/>
+    <rect x="9" y="43" width="32" height="5" rx="1" fill="#F3E9D2"/>
+  </symbol>
+
+  <symbol id="ch" viewBox="0 0 50 50">
+    <path d="M17 3v7M25 3v7M33 3v7M17 40v7M25 40v7M33 40v7M3 17h7M3 25h7M3 33h7M40 17h7M40 25h7M40 33h7"
+      stroke="#FFC20A" stroke-width="3"/>
+    <rect x="10" y="10" width="30" height="30" rx="4" fill="#083B5B" stroke="#FFC20A" stroke-width="2"/>
+    <rect x="19" y="19" width="12" height="12" fill="#6E9B52"/>
+  </symbol>
+
+  <symbol id="gp" viewBox="0 0 80 44">
+    <rect width="80" height="44" rx="22" fill="#0E8A8F"/>
+    <path d="M14 22h18M23 13v18" stroke="#fff" stroke-width="6"/>
+    <circle cx="62" cy="15" r="5" fill="#D91F32"/>
+    <circle cx="52" cy="27" r="5" fill="#FFC20A"/>
+  </symbol>
+
+</defs>
+</svg>
+
+<div class="bg" id="bg"></div>
+
+<!-- LOADING SCREEN -->
+<div id="ld">
+  <div>
+    <h1>Audio Typing Quest</h1>
+    <div class="ldb"><i></i></div>
+    <p>Loading your game…</p>
+  </div>
+</div>
+
+<div id="cf"></div>
+
+
+<!-- HOW TO PLAY DIALOG -->
+<div class="how-dialog" id="howToDialog" role="dialog"
+  aria-modal="true" aria-labelledby="howToTitle" aria-hidden="true">
+  <div class="how-dialog-panel">
+    <div class="how-dialog-head">
+      <div>
+        <h2 id="howToTitle">🎮 How to Play</h2>
+        <p>Follow these 5 simple steps and start your typing quest!</p>
+      </div>
+      <button class="how-close" id="closeHowTo" type="button"
+        aria-label="Close instructions">×</button>
+    </div>
+
+    <div class="how-steps">
+      <div class="how-step"><span class="how-step-num">1</span><div><strong>Start a game</strong><span>Choose your difficulty, then press the Single Player button.</span></div></div>
+      <div class="how-step"><span class="how-step-num">2</span><div><strong>Listen carefully</strong><span>Press the large speaker button and listen to the spoken word.</span></div></div>
+      <div class="how-step"><span class="how-step-num">3</span><div><strong>Type what you hear</strong><span>Enter the word in the typing box, then press Enter or Submit.</span></div></div>
+      <div class="how-step"><span class="how-step-num">4</span><div><strong>Replay when needed</strong><span>Press 🔊 Replay or use the ↑ Up Arrow key to hear the word again.</span></div></div>
+      <div class="how-step"><span class="how-step-num">5</span><div><strong>Earn points and beat the clock</strong><span>You get one retry for each word. Type accurately and finish before time runs out!</span></div></div>
+    </div>
+
+    <div class="how-tip">💡 <strong>Helpful tip:</strong> Use headphones and listen to the whole word before typing.</div>
+    <div class="how-dialog-actions">
+      <button class="btn big" id="gotItHowTo" type="button">Got it! Let's Play 🚀</button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- =======================================================
+     DASHBOARD
+======================================================= -->
+
+<section id="dash" class="view">
+
+  <header class="card hero">
+
+    <div class="avatar" id="avatar" title="Click me!"></div>
+
+    <div class="grow">
+      <span class="pill">
+        <i></i>
+        Sunrise Academy Computer Lab
+      </span>
+
+      <h1>Welcome, <span id="uName"></span>!</h1>
+
+      <p>
+        <span id="uGrade"></span>
+        · Level:
+        <b class="badge" id="uLevel"></b>
+      </p>
+    </div>
+
+    <button class="btn ghost" data-go="edit">✏️ Profile</button>
+    <button class="btn ghost" data-go="settings">⚙️ Settings</button>
+
+  </header>
+
+  <div class="grid" id="pStats"></div>
+
+  <div class="card center">
+
+    <h2>Pick a difficulty</h2>
+
+    <div class="row" id="chips"></div>
+
+    <div class="row">
+      <button class="btn big" id="spBtn">🎮 Single Player</button>
+      <button class="btn big alt" data-go="multi">👥 Multiplayer</button>
+    </div>
+
+  </div>
+
+  <div class="two">
+
+    <button class="card how-to-trigger" id="howToBtn" type="button"
+      aria-haspopup="dialog" aria-controls="howToDialog">
+      <span class="how-to-icon" aria-hidden="true">📖</span>
+      <span class="how-to-copy">
+        <strong>How to Play</strong>
+        <span>New here? Learn how to play in 5 easy steps.</span>
+      </span>
+      <span class="how-to-arrow" aria-hidden="true">→</span>
+    </button>
+
+    <article class="card">
+      <h2>My recent games</h2>
+
+      <div id="hist"></div>
+
+      <div class="row">
+        <button class="btn ghost sm" id="csvBtn">
+          ⬇ Export my results (CSV)
+        </button>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- =======================================================
+     GAME SCREEN
+======================================================= -->
+
+<section id="game" class="view">
+
+  <div class="card console">
+
+    <div class="cbar">
+      <i></i>
+      <i></i>
+      <i></i>
+      <b>AUDIO TYPING QUEST</b>
+    </div>
+
+    <div class="bar">
+      <b id="barFill"></b>
+    </div>
+
+    <div class="grid" id="live"></div>
+
+    <div class="stage" id="stage">
+
+      <button class="btn big arc" id="replay" aria-label="Replay word">
+        🔊
+        <small>Replay</small>
+      </button>
+
+      <p class="hint" id="hint"></p>
+
+      <input
+        id="typed"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="Type the word you hear..."
+        aria-label="Type the spoken word"
+      >
+
+      <p class="fb" id="fb" aria-live="polite"></p>
+
+      <div class="row">
+        <button class="btn" id="submit">✔ Check</button>
+        <button class="btn alt" id="skip">⏭ Next word</button>
+        <button class="btn ghost" id="quit">✖ Quit</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- =======================================================
+     RESULTS
+======================================================= -->
+
+<section id="results" class="view">
+
+  <div class="card center">
+    <div class="trophy">🏆</div>
+    <h1 id="resLvl"></h1>
+    <p id="resMsg"></p>
+  </div>
+
+  <div class="card center">
+    <p id="dbStatus" class="hint" role="status" aria-live="polite">
+      Your research result will be sent to the shared spreadsheet when connected.
+    </p>
+  </div>
+
+  <div class="grid" id="resGrid"></div>
+
+  <div class="row">
+    <button class="btn big" id="retry">🔁 Retry</button>
+    <button class="btn big alt" data-go="dash">🏠 Dashboard</button>
+  </div>
+
+</section>
+
+<!-- =======================================================
+     MULTIPLAYER PLACEHOLDER
+======================================================= -->
+
+<section id="multi" class="view">
+
+  <div class="card">
+
+    <h1>👥 Multiplayer lobby</h1>
+
+    <p class="warn">
+      🔌 Multiplayer is currently a preview.
+      Real online play needs a backend server, such as Firebase or WebSocket.
+    </p>
+
+    <div class="grid" id="rooms"></div>
+
+    <div class="row">
+      <input id="code" placeholder="Room code">
+      <button class="btn" id="joinBtn">Join room</button>
+    </div>
+
+    <p class="fb" id="mpMsg"></p>
+
+    <div class="row">
+      <button class="btn ghost" data-go="dash">← Back</button>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =======================================================
+     SETTINGS
+======================================================= -->
+
+<section id="settings" class="view">
+
+  <div class="card form">
+
+    <h1>⚙️ Settings</h1>
+
+    <label>
+      Sound on
+      <input type="checkbox" id="sSound">
+    </label>
+
+    <label>
+      Volume
+      <input type="range" id="sVol" min="0" max="1" step="0.1">
+    </label>
+
+    <label>
+      Difficulty
+      <select id="sDiff">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </label>
+
+    <label>
+      Timer
+      <select id="sTime">
+        <option value="30">30 seconds</option>
+        <option value="60">60 seconds</option>
+        <option value="90">90 seconds</option>
+      </select>
+    </label>
+
+    <label>
+      Theme
+      <select id="sTheme">
+        <option value="">Ocean</option>
+        <option value="dark">Night</option>
+        <option value="sun">Sunrise</option>
+      </select>
+    </label>
+
+    <div class="row">
+      <button class="btn" id="testVoice">🔊 Test voice</button>
+      <button class="btn ghost" data-go="dash">← Back</button>
+    </div>
+
+    <div class="row">
+      <button class="btn logout" id="logoutBtn" type="button">
+        🚪 Log Out
+      </button>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =======================================================
+     EDIT PROFILE
+======================================================= -->
+
+<section id="edit" class="view">
+
+  <div class="card form">
+
+    <h1>✏️ Edit profile</h1>
+
+    <p>
+      🔒 Registered login:
+      <b id="eReg"></b>.
+      This cannot be changed here.
+    </p>
+
+    <label>
+      Nickname
+      <input id="eNick" maxlength="16">
+    </label>
+
+    <div class="row" id="avs"></div>
+
+    <div class="row">
+      <button class="btn" id="saveProf">Save changes</button>
+      <button class="btn ghost" data-go="dash">← Back</button>
+    </div>
+
+  </div>
+
+</section>
+
+</main>
+
+<script>
+"use strict";
+
+/* =========================================================
+   1. BASIC HELPERS AND LOCAL STORAGE
+========================================================= */
+
+const $ = id => document.getElementById(id);
+
+const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const store = {
+  get(key, defaultValue) {
+    try {
+      const value = localStorage.getItem(key);
+      return value === null ? defaultValue : JSON.parse(value);
+    } catch (error) {
+      console.warn("Could not read local storage:", error);
+      return defaultValue;
+    }
+  },
+
+  set(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error("Could not save local storage:", error);
+      return false;
+    }
+  }
+};
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[character]);
+}
+
+function getStoredResults() {
+  const results = store.get("tg_results", []);
+  return Array.isArray(results) ? results : [];
+}
+
+/* =========================================================
+   2. LOGIN INTEGRATION
+   The login page should save:
+   localStorage.setItem("studentName", name);
+   localStorage.setItem("studentGrade", grade);
+========================================================= */
+
+const regName = localStorage.getItem("studentName") || "Guest";
+const regGrade = localStorage.getItem("studentGrade") || "Grade 7";
+
+function makeParticipantCode() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return "P-" + window.crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
+  }
+
+  return "P-" + Math.random().toString(36).slice(2, 12).toUpperCase();
+}
+
+let participantCode = localStorage.getItem("participantCode");
+
+if (!participantCode) {
+  participantCode = makeParticipantCode();
+  localStorage.setItem("participantCode", participantCode);
+}
+
+/* =========================================================
+   3. GOOGLE SHEETS DATABASE CONNECTION
+========================================================= */
+
+/*
+  This is your deployed Google Apps Script Web App URL.
+
+  Do not add another copy of this constant.
+*/
+
+const SHEETS_WEB_APP_URL =
+  "https://script.google.com/macros/s/AKfycbzwo2qY2SP_f6lsgDUJdv0a7DYZku_giZ8S8FyaEDdovBjEaZtvLvmnxabKwULw1YI_/exec";
+
+const PENDING_UPLOADS_KEY = "tg_pending_research_uploads";
+
+let uploadQueueBusy = false;
+let uploadQueueRerun = false;
+
+function readPendingUploads() {
+  try {
+    const value = JSON.parse(
+      localStorage.getItem(PENDING_UPLOADS_KEY) || "[]"
+    );
+
+    return Array.isArray(value) ? value : [];
+
+  } catch (error) {
+    console.warn("Could not read pending uploads:", error);
+    return [];
+  }
+}
+
+function savePendingUploads(items) {
+  try {
+    localStorage.setItem(PENDING_UPLOADS_KEY, JSON.stringify(items));
+    return true;
+
+  } catch (error) {
+    console.error("Could not save pending uploads:", error);
+    return false;
+  }
+}
+
+function createResearchRecordId() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+
+  return "ATQ-" +
+    Date.now().toString(36) + "-" +
+    Math.random().toString(36).slice(2, 12);
+}
+
+function setDatabaseStatus(message) {
+  const status = $("dbStatus");
+
+  if (status) {
+    status.textContent = message;
+  }
+}
+
+/*
+  The shared spreadsheet receives anonymous research data.
+
+  The student's registered name is NOT included in this payload.
+*/
+
+function buildResearchPayload(record) {
+  return {
+    record_id: record.recordId,
+    participant_code: record.participantCode,
+    grade: record.grade,
+    played_at: record.playedAt,
+    attempt_number: record.n,
+    difficulty: record.diff,
+    time_limit_seconds: record.limit,
+    duration_seconds: record.durationSeconds,
+    wpm: record.wpm,
+    accuracy_percent: record.acc,
+    correct_characters: record.cc,
+    incorrect_characters: record.wc,
+    mistakes: record.bad,
+    characters_typed: record.typed,
+    score: record.score,
+    words_completed: record.words
+  };
+}
+
+/*
+  Add a result to the local upload queue.
+
+  Existing record IDs are not added twice.
+*/
+
+function queueResearchRecord(payload) {
+  const pending = readPendingUploads();
+
+  const alreadyQueued = pending.some(
+    item => item.record_id === payload.record_id
+  );
+
+  if (!alreadyQueued) {
+    pending.push(payload);
+    savePendingUploads(pending);
+  }
+}
+
+/*
+  Send the completed result to the queue first.
+  This means the result is saved locally even if the internet is offline.
+*/
+
+async function sendResearchRecord(record) {
+  if (!SHEETS_WEB_APP_URL) {
+    setDatabaseStatus(
+      "⚠️ Google Sheets URL is missing. Your result is saved on this device."
+    );
+    return;
+  }
+
+  const payload = buildResearchPayload(record);
+
+  queueResearchRecord(payload);
+
+  if (!navigator.onLine) {
+    setDatabaseStatus(
+      "📴 No internet connection. Your result is saved on this device and will upload when internet returns."
+    );
+    return;
+  }
+
+  await flushPendingResearchUploads();
+}
+
+/*
+  Verify a submitted record through JSONP.
+
+  The browser cannot read the response from a no-cors POST.
+  Instead, this function checks whether the record ID exists
+  in the Google Sheet using the Apps Script doGet verification route.
+*/
+
+function verifyResearchRecord(recordId) {
+  return new Promise((resolve, reject) => {
+
+    const callbackName =
+      "__atq_verify_" +
+      Date.now() +
+      "_" +
+      Math.random().toString(36).slice(2, 10);
+
+    const script = document.createElement("script");
+
+    let finished = false;
+
+    const timeoutId = setTimeout(() => {
+      cleanup();
+      reject(
+        new Error("Timed out while checking Google Sheets.")
+      );
+    }, 15000);
+
+    function cleanup() {
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeoutId);
+
+      script.remove();
+
+      try {
+        delete window[callbackName];
+      } catch (error) {
+        window[callbackName] = undefined;
+      }
+    }
+
+    window[callbackName] = result => {
+      cleanup();
+
+      if (!result || result.record_id !== recordId) {
+        reject(
+          new Error("Google Sheets returned an invalid verification response.")
+        );
+        return;
+      }
+
+      resolve(result.found === true);
+    };
+
+    script.onerror = () => {
+      cleanup();
+
+      reject(
+        new Error("Could not verify the result in Google Sheets.")
+      );
+    };
+
+    const separator = SHEETS_WEB_APP_URL.includes("?") ? "&" : "?";
+
+    script.src =
+      SHEETS_WEB_APP_URL +
+      separator +
+      "action=verify" +
+      "&record_id=" + encodeURIComponent(recordId) +
+      "&callback=" + encodeURIComponent(callbackName) +
+      "&_=" + Date.now();
+
+    document.head.appendChild(script);
+  });
+}
+
+/*
+  Upload all pending results.
+
+  A result is removed from the queue ONLY after the verification
+  endpoint confirms that its record ID exists in Google Sheets.
+
+  If verification fails, the result stays in local storage.
+*/
+
+async function flushPendingResearchUploads() {
+
+  if (uploadQueueBusy) {
+    uploadQueueRerun = true;
+    return;
+  }
+
+  let pending = readPendingUploads();
+
+  if (pending.length === 0) {
+    return;
+  }
+
+  if (!navigator.onLine) {
+    setDatabaseStatus(
+      "📴 Offline. Research results are waiting on this device."
+    );
+    return;
+  }
+
+  uploadQueueBusy = true;
+
+  let sentCount = 0;
+  let failed = false;
+
+  try {
+
+    do {
+      uploadQueueRerun = false;
+      pending = readPendingUploads();
+
+      for (const item of pending) {
+
+        if (!navigator.onLine) {
+          break;
+        }
+
+        try {
+
+          setDatabaseStatus(
+            "📤 Sending research result to Google Sheets..."
+          );
+
+          /*
+            text/plain is used to avoid a CORS preflight request.
+
+            no-cors means the POST response is unreadable.
+            The JSONP verification below checks whether the record
+            was actually saved.
+          */
+
+          await fetch(SHEETS_WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(item)
+          });
+
+          const confirmed = await verifyResearchRecord(
+            item.record_id
+          );
+
+          if (!confirmed) {
+            throw new Error(
+              "The record has not appeared in Google Sheets yet."
+            );
+          }
+
+          /*
+            Delete the item from the pending queue only
+            after successful verification.
+          */
+
+          const latest = readPendingUploads().filter(
+            row => row.record_id !== item.record_id
+          );
+
+          savePendingUploads(latest);
+
+          sentCount++;
+
+        } catch (error) {
+
+          console.error(
+            "Google Sheets upload failed. Keeping the result queued:",
+            error
+          );
+
+          failed = true;
+          break;
+        }
+      }
+
+    } while (
+      uploadQueueRerun &&
+      navigator.onLine &&
+      !failed
+    );
+
+    const remaining = readPendingUploads().length;
+
+    if (failed || remaining > 0) {
+
+      setDatabaseStatus(
+        "⚠️ Some results are still waiting for confirmation. They remain saved on this device and will retry when the connection is available."
+      );
+
+    } else if (sentCount > 0) {
+
+      setDatabaseStatus(
+        "✅ Research result confirmed in Google Sheets!"
+      );
+    }
+
+  } finally {
+
+    uploadQueueBusy = false;
+
+    /*
+      If another result arrived during the final upload,
+      start another upload pass.
+    */
+
+    if (uploadQueueRerun && navigator.onLine && !failed) {
+      uploadQueueRerun = false;
+
+      setTimeout(() => {
+        void flushPendingResearchUploads();
+      }, 0);
+    }
+  }
+}
+
+/*
+  Retry pending uploads when the connection returns.
+*/
+
+window.addEventListener("online", () => {
+  setDatabaseStatus(
+    "🌐 Internet restored. Sending saved research results..."
+  );
+
+  void flushPendingResearchUploads();
+});
+
+window.addEventListener("offline", () => {
+  setDatabaseStatus(
+    "📴 Internet disconnected. New results will be queued on this device."
+  );
+});
+
+/* =========================================================
+   4. BACKGROUND DECORATIONS
+========================================================= */
+
+const R = {
+  hh: 1.5,
+  cs: .67,
+  mo: 1,
+  ch: 1,
+  gp: .55
+};
+
+const C = [
+  "#FFC20A",
+  "#F36B21",
+  "#D91F32",
+  "#079B9D"
+];
+
+const rn = () => Math.random() * 100;
+
+$("bg").innerHTML = [
+  ["hh", 8, 10, 50, 12, 1],
+  ["cs", 2, 46, 100, -6, 1],
+  ["ch", 48, 4, 44, 0, .9],
+  ["cs", 84, 6, 100, 14, .5],
+  ["gp", 85, 42, 100, 0, 1],
+  ["ch", 90, 72, 60, -8, .6],
+  ["mo", 76, 76, 90, -12, 1],
+  ["mo", 32, 82, 60, 6, .6],
+  ["hh", 28, 62, 40, -10, .5],
+  ["gp", 56, 86, 70, 8, .5]
+
+].map(([key, x, y, width, rotation, opacity], index) => `
+  <svg
+    style="
+      left:${x}%;
+      top:${y}%;
+      width:${width}px;
+      height:${width * R[key]}px;
+      --r:${rotation}deg;
+      opacity:${opacity};
+      animation-delay:-${index * 2}s
+    ">
+    <use href="#${key}"></use>
+  </svg>
+`).join("")
+
++ `
+  <div class="dsc"
+       style="left:3%;top:68%;width:150px;height:150px"></div>
+
+  <div class="dsc"
+       style="left:44%;top:90%;width:80px;height:80px;animation-direction:reverse"></div>
+`
+
++ Array.from({ length: 34 }, (_, index) => {
+  if (index % 3) {
+    return `
+      <i class="px"
+         style="
+           left:${rn()}%;
+           top:${rn()}%;
+           background:${C[index % 4]};
+           animation-delay:-${index % 5}s
+         ">
+      </i>
+    `;
+  }
+
+  return `
+    <b class="pl"
+       style="
+         left:${rn()}%;
+         top:${rn()}%;
+         color:${C[index % 4]}
+       ">+</b>
+  `;
+}).join("");
+
+setTimeout(() => {
+  $("ld").classList.add("off");
+}, 1100);
+
+/* =========================================================
+   5. GAME WORDS AND LEVELS
+========================================================= */
+
+const WORDS = {
+
+  easy: [
+    "apple", "school", "friend", "garden", "family",
+    "river", "window", "happy", "planet", "orange",
+    "bridge", "butter", "castle", "doctor", "farmer",
+    "pencil", "rabbit", "summer", "yellow", "monkey"
+  ],
+
+  medium: [
+    "adventure", "beautiful", "calendar", "discover",
+    "elephant", "favorite", "geography", "hospital",
+    "imagine", "knowledge", "library", "mountain",
+    "neighbor", "opposite", "popular", "question",
+    "remember", "sentence", "treasure", "universe"
+  ],
+
+  hard: [
+    "accommodate", "acquaintance", "necessary",
+    "occasionally", "rhythm", "privilege", "separate",
+    "vocabulary", "conscience", "environment",
+    "government", "independent", "maintenance",
+    "miscellaneous", "parliament", "pronunciation",
+    "recommend", "restaurant", "temperature",
+    "unnecessary"
+  ]
+};
+
+const LEVELS = [
+  "Beginner",
+  "Novice",
+  "Intermediate",
+  "Advanced",
+  "Expert"
+];
+
+const AVATARS = [
+  "🐯", "🦊", "🐼", "🐸",
+  "🦉", "🐙", "🦄", "🚀"
+];
+
+const MSGS = [
+  "Great start! Every expert began here. Keep practicing.",
+  "Nice progress! Listen closely and keep your fingers steady.",
+  "Well done! Your keyboard skills are growing.",
+  "Excellent! Fast and accurate.",
+  "Outstanding! You are a typing star!"
+];
+
+/* =========================================================
+   6. PLAYER SETTINGS
+========================================================= */
+
+const validDiffs = ["easy", "medium", "hard"];
+const validThemes = ["", "dark", "sun"];
+const validAvatars = AVATARS;
+
+const savedCfg = store.get("tg_cfg_" + regName, {});
+
+const cfg = {
+  sound: typeof savedCfg.sound === "boolean" ? savedCfg.sound : true,
+
+  vol: Number.isFinite(Number(savedCfg.vol))
+    ? Math.max(0, Math.min(1, Number(savedCfg.vol)))
+    : 1,
+
+  diff: validDiffs.includes(savedCfg.diff)
+    ? savedCfg.diff
+    : "easy",
+
+  time: [30, 60, 90].includes(Number(savedCfg.time))
+    ? Number(savedCfg.time)
+    : 60,
+
+  theme: validThemes.includes(savedCfg.theme)
+    ? savedCfg.theme
+    : "",
+
+  avatar: validAvatars.includes(savedCfg.avatar)
+    ? savedCfg.avatar
+    : "🐯",
+
+  nick: typeof savedCfg.nick === "string"
+    ? savedCfg.nick.slice(0, 16)
+    : ""
+};
+
+const saveCfg = () => {
+  store.set("tg_cfg_" + regName, cfg);
+};
+
+const applyTheme = () => {
+  document.body.dataset.theme = cfg.theme;
+};
+
+/* =========================================================
+   7. PLAYER RESULTS
+========================================================= */
+
+function myResults() {
+  return getStoredResults().filter(
+    record => record.student === regName
+  );
+}
+
+/* =========================================================
+   8. LEVEL SYSTEM
+========================================================= */
+
+function levelFor(net, accuracy) {
+
+  let index =
+    net >= 35 ? 4 :
+    net >= 25 ? 3 :
+    net >= 16 ? 2 :
+    net >= 8 ? 1 : 0;
+
+  if (accuracy < 75) {
+    index = Math.min(index, 1);
+  }
+
+  return index;
+}
+
+function profileLevel() {
+
+  const last = myResults().slice(-5);
+
+  if (!last.length) {
+    return LEVELS[0];
+  }
+
+  const average = key =>
+    last.reduce(
+      (sum, record) => sum + Number(record[key] || 0),
+      0
+    ) / last.length;
+
+  const avgWpm = average("wpm");
+  const avgAcc = average("acc");
+
+  return LEVELS[
+    levelFor(avgWpm * avgAcc / 100, avgAcc)
+  ];
+}
+
+/* =========================================================
+   9. NAVIGATION
+========================================================= */
+
+function show(id) {
+
+  document.querySelectorAll(".view").forEach(view => {
+    view.classList.toggle("active", view.id === id);
+  });
+
+  if (id === "dash") {
+    renderDash();
+  }
+
+  if (id === "settings") {
+    fillSettings();
+  }
+
+  if (id === "edit") {
+    fillEdit();
+  }
+}
+
+document.querySelectorAll("[data-go]").forEach(button => {
+  button.addEventListener("click", () => {
+    show(button.dataset.go);
+  });
+});
+
+
+/* =========================================================
+   HOW TO PLAY DIALOG
+========================================================= */
+const howToDialog = $("howToDialog");
+const howToBtn = $("howToBtn");
+const closeHowTo = () => {
+  howToDialog.classList.remove("open");
+  howToDialog.setAttribute("aria-hidden", "true");
+  howToBtn.focus();
+};
+const openHowTo = () => {
+  howToDialog.classList.add("open");
+  howToDialog.setAttribute("aria-hidden", "false");
+  $("closeHowTo").focus();
+};
+howToBtn.addEventListener("click", openHowTo);
+$("closeHowTo").addEventListener("click", closeHowTo);
+$("gotItHowTo").addEventListener("click", closeHowTo);
+howToDialog.addEventListener("click", event => {
+  if (event.target === howToDialog) closeHowTo();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && howToDialog.classList.contains("open")) {
+    closeHowTo();
+  }
+});
+
+/* =========================================================
+   10. ANIMATED STAT CARDS
+========================================================= */
+
+function statCard([icon, label, value]) {
+
+  const match = String(value).match(/^(\d+)(%|s)?$/);
+
+  const number = match
+    ? `<b data-n="${match[1]}" data-s="${match[2] || ""}">0${match[2] || ""}</b>`
+    : `<b>${escapeHTML(value)}</b>`;
+
+  return `
+    <div class="stat">
+      <span>${icon}</span>
+      ${number}
+      <small>${escapeHTML(label)}</small>
+    </div>
+  `;
+}
+
+function count(box) {
+
+  box.querySelectorAll("[data-n]").forEach(element => {
+
+    const number = Number(element.dataset.n);
+    const suffix = element.dataset.s;
+    const start = performance.now();
+
+    function animate(now) {
+
+      const progress = rm
+        ? 1
+        : Math.min(1, (now - start) / 700);
+
+      element.textContent =
+        Math.round(number * progress) + suffix;
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    requestAnimationFrame(animate);
+  });
+}
+
+/* =========================================================
+   11. DASHBOARD
+========================================================= */
+
+function renderDash() {
+
+  $("uName").textContent = cfg.nick || regName;
+
+  $("uGrade").textContent =
+    /^\d+$/.test(regGrade)
+      ? "Grade " + regGrade
+      : regGrade;
+
+  $("avatar").textContent = cfg.avatar;
+  $("uLevel").textContent = profileLevel();
+
+  const results = myResults();
+
+  const bestWpm = Math.max(
+    0,
+    ...results.map(record => Number(record.wpm || 0))
+  );
+
+  const averageAccuracy = results.length
+    ? Math.round(
+        results.reduce(
+          (sum, record) => sum + Number(record.acc || 0),
+          0
+        ) / results.length
+      )
+    : 0;
+
+  const totalScore = results.reduce(
+    (sum, record) => sum + Number(record.score || 0),
+    0
+  );
+
+  $("pStats").innerHTML = [
+    ["🎮", "Games played", results.length],
+    ["⚡", "Best WPM", bestWpm],
+    ["🎯", "Avg accuracy", averageAccuracy + "%"],
+    ["⭐", "Total score", totalScore],
+    ["🏆", "Level", profileLevel()]
+  ].map(statCard).join("");
+
+  count($("pStats"));
+
+  $("chips").innerHTML = ["easy", "medium", "hard"].map(difficulty => `
+    <button class="chip ${difficulty === cfg.diff ? "on" : ""}"
+            data-d="${difficulty}">
+      ${difficulty[0].toUpperCase() + difficulty.slice(1)}
+    </button>
+  `).join("");
+
+  if (results.length) {
+
+    $("hist").innerHTML = results
+      .slice(-5)
+      .reverse()
+      .map(record => `
+        <div class="hrow">
+          <span>#${Number(record.n) || 0} ${escapeHTML(record.date || "")}</span>
+          <span>${escapeHTML(record.diff || "")}</span>
+          <b>${Number(record.wpm) || 0} WPM</b>
+          <span>${Number(record.acc) || 0}%</span>
+        </div>
+      `)
+      .join("");
+
+  } else {
+
+    $("hist").innerHTML =
+      "<p>No games yet. Press Single Player to start!</p>";
+  }
+}
+
+$("chips").addEventListener("click", event => {
+
+  const button = event.target.closest("[data-d]");
+
+  if (!button) return;
+
+  const difficulty = button.dataset.d;
+
+  if (!validDiffs.includes(difficulty)) return;
+
+  cfg.diff = difficulty;
+
+  saveCfg();
+  renderDash();
+});
+
+$("avatar").addEventListener("click", event => {
+
+  const avatar = event.currentTarget;
+
+  avatar.classList.remove("bnc");
+
+  void avatar.offsetWidth;
+
+  avatar.classList.add("bnc");
+});
+
+/* =========================================================
+   12. PROFILE EDITING
+========================================================= */
+
+let pickAv = cfg.avatar;
+
+function drawAv() {
+
+  $("avs").innerHTML = AVATARS.map(avatar => `
+    <button type="button"
+            class="chip ${avatar === pickAv ? "on" : ""}"
+            data-a="${avatar}">
+      ${avatar}
+    </button>
+  `).join("");
+}
+
+function fillEdit() {
+
+  $("eReg").textContent = regName;
+  $("eNick").value = cfg.nick;
+
+  pickAv = cfg.avatar;
+
+  drawAv();
+}
+
+$("avs").addEventListener("click", event => {
+
+  const button = event.target.closest("[data-a]");
+
+  if (!button) return;
+
+  const avatar = button.dataset.a;
+
+  if (!AVATARS.includes(avatar)) return;
+
+  pickAv = avatar;
+
+  drawAv();
+});
+
+$("saveProf").addEventListener("click", () => {
+
+  cfg.nick = $("eNick").value.trim().slice(0, 16);
+  cfg.avatar = pickAv;
+
+  saveCfg();
+
+  show("dash");
+});
+
+/* =========================================================
+   13. SETTINGS
+========================================================= */
+
+function fillSettings() {
+
+  $("sSound").checked = cfg.sound;
+  $("sVol").value = cfg.vol;
+  $("sDiff").value = cfg.diff;
+  $("sTime").value = String(cfg.time);
+  $("sTheme").value = cfg.theme;
+}
+
+[
+  "sSound",
+  "sVol",
+  "sDiff",
+  "sTime",
+  "sTheme"
+].forEach(id => {
+
+  $(id).addEventListener("change", () => {
+
+    cfg.sound = $("sSound").checked;
+
+    cfg.vol = Math.max(
+      0,
+      Math.min(1, Number($("sVol").value))
+    );
+
+    cfg.diff = validDiffs.includes($("sDiff").value)
+      ? $("sDiff").value
+      : "easy";
+
+    cfg.time = [30, 60, 90].includes(Number($("sTime").value))
+      ? Number($("sTime").value)
+      : 60;
+
+    cfg.theme = validThemes.includes($("sTheme").value)
+      ? $("sTheme").value
+      : "";
+
+    saveCfg();
+    applyTheme();
+  });
+});
+
+/* =========================================================
+   14. LOGOUT
+========================================================= */
+
+$("logoutBtn").addEventListener("click", () => {
+
+  const confirmed = confirm(
+    "Log out of Audio Typing Quest? Your saved game results will remain on this device."
+  );
+
+  if (!confirmed) return;
+
+  /*
+    Clear the current login session.
+    Keep local results, player settings, and queued uploads.
+  */
+
+  localStorage.removeItem("studentName");
+  localStorage.removeItem("studentGrade");
+  localStorage.removeItem("participantCode");
+
+  window.location.href = "Final Login.html";
+});
+
+/* =========================================================
+   15. TEXT TO SPEECH — CLEAR VOICE SETTINGS
+========================================================= */
+
+const canSpeak = "speechSynthesis" in window;
+let availableSpeechVoices = [];
+
+/*
+  Prefer a clear English voice installed by the browser or operating
+  system. Voice availability differs by device, so use a sensible
+  English fallback when a preferred voice is not installed.
+*/
+function loadSpeechVoices() {
+  if (!canSpeak) return;
+  availableSpeechVoices = speechSynthesis.getVoices();
+}
+
+if (canSpeak) {
+  loadSpeechVoices();
+  speechSynthesis.addEventListener("voiceschanged", loadSpeechVoices);
+}
+
+function chooseClearEnglishVoice() {
+  const voices = availableSpeechVoices.length
+    ? availableSpeechVoices
+    : (canSpeak ? speechSynthesis.getVoices() : []);
+
+  const englishVoices = voices.filter(voice =>
+    /^en(-|$)/i.test(voice.lang || "")
+  );
+
+  if (!englishVoices.length) return null;
+
+  // Favor commonly clear, natural English voices when present.
+  const preferredPatterns = [
+    /google.*(us|english)/i,
+    /microsoft.*(aria|jenny|guy|zira|david)/i,
+    /samantha/i,
+    /ava/i,
+    /allison/i,
+    /karen/i,
+    /daniel/i
+  ];
+
+  for (const pattern of preferredPatterns) {
+    const match = englishVoices.find(voice => pattern.test(voice.name));
+    if (match) return match;
+  }
+
+  return englishVoices.find(voice => /^en-US$/i.test(voice.lang))
+    || englishVoices[0];
+}
+
+function speak(text) {
+  if (!cfg.sound || !canSpeak) return false;
+
+  speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(String(text));
+  const selectedVoice = chooseClearEnglishVoice();
+
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+    utterance.lang = selectedVoice.lang || "en-US";
+  } else {
+    utterance.lang = "en-US";
+  }
+
+  // Slightly slower speech gives learners more time to hear each sound.
+  utterance.rate = 0.78;
+  utterance.pitch = 1.0;
+  utterance.volume = cfg.vol;
+
+  utterance.onstart = () => {
+    $("replay").classList.add("talk");
+  };
+
+  utterance.onend = () => {
+    $("replay").classList.remove("talk");
+  };
+
+  utterance.onerror = () => {
+    $("replay").classList.remove("talk");
+  };
+
+  speechSynthesis.speak(utterance);
+  return true;
+}
+
+$("testVoice").addEventListener("click", () => {
+  speak("Hello! Welcome to Audio Typing Quest. Listen carefully to each word. You can press the replay button to hear it again.");
+});
+
+/* =========================================================
+   16. GAME SETUP
+========================================================= */
+
+const LIVE = [
+  ["time", "⏱️ Time"],
+  ["score", "⭐ Score"],
+  ["ok", "✅ Correct"],
+  ["bad", "❌ Incorrect"],
+  ["acc", "🎯 Accuracy"],
+  ["wpm", "⚡ WPM"]
+];
+
+$("live").innerHTML = LIVE.map(([key, label]) => `
+  <div class="stat">
+    <b id="L_${key}">0</b>
+    <small>${label}</small>
+  </div>
+`).join("");
+
+let g = null;
+
+const shuffle = array => {
+
+  const copy = array.slice();
+
+  for (let i = copy.length - 1; i > 0; i--) {
+
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+};
+
+/* =========================================================
+   17. START GAME
+========================================================= */
+
+function startGame() {
+
+  if (g) {
+    stop();
+  }
+
+  g = {
+
+    pool: shuffle(WORDS[cfg.diff]),
+
+    i: 0,
+    word: "",
+    tries: 0,
+
+    score: 0,
+    ok: 0,
+    bad: 0,
+
+    cc: 0,
+    wc: 0,
+    typed: 0,
+
+    start: Date.now(),
+    left: cfg.time,
+
+    lock: false,
+    timer: null,
+    to: null
+  };
+
+  $("L_score").textContent = "0";
+
+  setDatabaseStatus(
+    "Your research result will be sent to the shared spreadsheet when connected."
+  );
+
+  show("game");
+
+  nextWord();
+
+  g.timer = setInterval(tick, 250);
+
+  tick();
+}
+
+/* =========================================================
+   18. NEXT WORD AND AUDIO
+========================================================= */
+
+function nextWord() {
+
+  if (!g) return;
+
+  if (g.i >= g.pool.length) {
+
+    g.pool = shuffle(WORDS[cfg.diff]);
+    g.i = 0;
+  }
+
+  g.word = g.pool[g.i++];
+
+  g.tries = 0;
+  g.lock = false;
+
+  $("typed").value = "";
+  $("fb").textContent = "";
+  $("fb").className = "fb";
+
+  const stage = $("stage");
+
+  stage.classList.remove("swap");
+
+  void stage.offsetWidth;
+
+  stage.classList.add("swap");
+
+  say();
+}
+
+function say() {
+
+  if (!g) return;
+
+  const spoken = speak(g.word);
+
+  if (spoken) {
+
+    $("hint").textContent = "🎧 Listen carefully...";
+
+  } else {
+
+    $("hint").textContent =
+      "🔇 Audio is unavailable or turned off. The word is: " + g.word;
+  }
+
+  $("typed").focus();
+}
+
+/* =========================================================
+   19. GAME ANIMATIONS AND FEEDBACK
+========================================================= */
+
+function later(milliseconds, callback) {
+
+  if (!g) return;
+
+  g.lock = true;
+
+  clearTimeout(g.to);
+
+  g.to = setTimeout(() => {
+
+    if (!g) return;
+
+    callback();
+
+  }, milliseconds);
+}
+
+function flash(className) {
+
+  const input = $("typed");
+
+  input.classList.remove("shake", "pop");
+
+  void input.offsetWidth;
+
+  input.classList.add(className);
+}
+
+$("typed").addEventListener("animationend", event => {
+
+  event.target.classList.remove("pop", "shake");
+});
+
+function float(text) {
+
+  const element = document.createElement("span");
+
+  element.className = "fp";
+  element.textContent = text;
+
+  $("stage").appendChild(element);
+
+  element.addEventListener("animationend", () => {
+    element.remove();
+  });
+}
+
+/* =========================================================
+   20. WPM AND ACCURACY
+========================================================= */
+
+/*
+  WPM:
+  Correct characters / 5 / elapsed minutes
+
+  Accuracy:
+  Correct characters / total evaluated characters * 100
+*/
+
+function calc(elapsedSeconds) {
+
+  if (!g) {
+    return {
+      wpm: 0,
+      acc: 100
+    };
+  }
+
+  const totalCharacters = g.cc + g.wc;
+
+  const wpm = elapsedSeconds > 0
+    ? Math.round(
+        g.cc / 5 / (elapsedSeconds / 60)
+      )
+    : 0;
+
+  const accuracy = totalCharacters > 0
+    ? Math.round(
+        g.cc / totalCharacters * 100
+      )
+    : 100;
+
+  return {
+    wpm,
+    acc: accuracy
+  };
+}
+
+/* =========================================================
+   21. UPDATE GAME DISPLAY
+========================================================= */
+
+function paint(elapsedSeconds) {
+
+  if (!g) return;
+
+  const stats = calc(elapsedSeconds);
+
+  const values = {
+
+    time: Math.ceil(g.left) + "s",
+    score: g.score,
+    ok: g.ok,
+    bad: g.bad,
+    acc: stats.acc + "%",
+    wpm: stats.wpm
+  };
+
+  for (const key in values) {
+
+    const element = $("L_" + key);
+
+    if (
+      key === "score" &&
+      element.textContent !== String(values[key])
+    ) {
+
+      element.classList.remove("bump");
+
+      void element.offsetWidth;
+
+      element.classList.add("bump");
+    }
+
+    element.textContent = values[key];
+  }
+
+  $("barFill").style.width =
+    Math.max(0, g.left / cfg.time * 100) + "%";
+}
+
+/* =========================================================
+   22. GAME TIMER
+========================================================= */
+
+function tick() {
+
+  if (!g) return;
+
+  const elapsedSeconds =
+    (Date.now() - g.start) / 1000;
+
+  g.left = Math.max(
+    0,
+    cfg.time - elapsedSeconds
+  );
+
+  if (g.left <= 0) {
+
+    finish();
+
+    return;
+  }
+
+  paint(elapsedSeconds);
+}
+
+/* =========================================================
+   23. SUBMIT ANSWER
+========================================================= */
+
+function submit() {
+
+  if (!g || g.lock) return;
+
+  const typedText = $("typed").value.trim().toLowerCase();
+  const correctWord = g.word;
+
+  const feedback = $("fb");
+
+  if (!typedText) return;
+
+  let matchingCharacters = 0;
+
+  for (let i = 0; i < typedText.length; i++) {
+
+    if (typedText[i] === correctWord[i]) {
+      matchingCharacters++;
+    }
+  }
+
+  g.cc += matchingCharacters;
+
+  g.wc += Math.max(
+    typedText.length,
+    correctWord.length
+  ) - matchingCharacters;
+
+  g.typed += typedText.length;
+
+  if (typedText === correctWord) {
+
+    const points =
+      (g.tries ? 5 : 10) + correctWord.length;
+
+    g.ok++;
+    g.score += points;
+
+    feedback.textContent =
+      "✅ Correct! +" + points;
+
+    feedback.className = "fb good";
+
+    flash("pop");
+
+    float("+" + points);
+
+    later(700, nextWord);
+
+  } else {
+
+    g.bad++;
+
+    flash("shake");
+
+    feedback.className = "fb bad";
+
+    if (g.tries === 0) {
+
+      /*
+        First incorrect answer:
+        Give the player one more try.
+      */
+
+      g.tries = 1;
+
+      feedback.textContent =
+        "❌ Not quite. Listen and try again!";
+
+      $("typed").value = "";
+
+      setTimeout(() => {
+
+        if (g) {
+          say();
+        }
+
+      }, 500);
+
+    } else {
+
+      /*
+        Second incorrect answer:
+        Show the correct word and continue.
+      */
+
+      feedback.textContent =
+        "❌ The word was: " + correctWord;
+
+      later(1500, nextWord);
+    }
+  }
+
+  paint((Date.now() - g.start) / 1000);
+}
+
+/* =========================================================
+   24. SKIP WORD
+========================================================= */
+
+function skip() {
+
+  if (!g || g.lock) return;
+
+  g.bad++;
+
+  g.wc += g.word.length;
+
+  flash("shake");
+
+  $("fb").textContent =
+    "⏭ Skipped. The word was: " + g.word;
+
+  $("fb").className = "fb bad";
+
+  later(1200, nextWord);
+}
+
+/* =========================================================
+   25. STOP GAME
+========================================================= */
+
+function stop() {
+
+  if (!g) return;
+
+  clearInterval(g.timer);
+  clearTimeout(g.to);
+
+  if (canSpeak) {
+    speechSynthesis.cancel();
+  }
+
+  $("replay").classList.remove("talk");
+}
+
+/* =========================================================
+   26. FINISH GAME AND SAVE RESULT
+========================================================= */
+
+function finish() {
+
+  if (!g) return;
+
+  const elapsedSeconds = Math.max(
+    0,
+    (Date.now() - g.start) / 1000
+  );
+
+  const durationSeconds = Math.min(
+    cfg.time,
+    Math.round(elapsedSeconds)
+  );
+
+  const stats = calc(elapsedSeconds);
+
+  stop();
+
+  const allResults = getStoredResults();
+
+  /*
+    Local history may include the student's registered display name.
+    This is stored only in this browser.
+
+    The Google Sheets payload does not include that name.
+  */
+
+  const participantAttempts = allResults.filter(
+    record => record.participantCode === participantCode
+  );
+
+  const myPreviousResults = allResults.filter(
+    record => record.student === regName
+  );
+
+  const playedAt = new Date().toISOString();
+
+  const record = {
+
+    recordId: createResearchRecordId(),
+
+    student: regName,
+
+    participantCode: participantCode,
+
+    grade: regGrade,
+
+    n: participantAttempts.length + 1,
+
+    date: new Date().toLocaleDateString(),
+
+    playedAt: playedAt,
+
+    durationSeconds: durationSeconds,
+
+    diff: cfg.diff,
+
+    limit: cfg.time,
+
+    wpm: stats.wpm,
+
+    acc: stats.acc,
+
+    cc: g.cc,
+
+    wc: g.wc,
+
+    bad: g.bad,
+
+    typed: g.typed,
+
+    score: g.score,
+
+    words: g.ok
+  };
+
+  allResults.push(record);
+
+  /*
+    Save local backup first.
+    This keeps the result even when the internet is unavailable.
+  */
+
+  const localSaved = store.set(
+    "tg_results",
+    allResults
+  );
+
+  g = null;
+
+  showResults(
+    record,
+    myPreviousResults[0] || null
+  );
+
+  if (!localSaved) {
+
+    setDatabaseStatus(
+      "⚠️ Browser storage could not save the local backup. Check your browser storage settings."
+    );
+  }
+
+  /*
+    Send the completed result to Google Sheets.
+    The results screen does not wait for the upload.
+  */
+
+  sendResearchRecord(record).catch(error => {
+
+    console.error(
+      "Could not upload research result:",
+      error
+    );
+
+    setDatabaseStatus(
+      "⚠️ Upload could not start. Your result may still be saved locally. Export your CSV as a backup."
+    );
+  });
+}
+
+/* =========================================================
+   27. RESULTS SCREEN
+========================================================= */
+
+function confetti() {
+
+  if (rm) return;
+
+  $("cf").innerHTML = Array.from(
+    { length: 44 },
+    (_, index) => `
+      <i class="cf"
+         style="
+           left:${rn()}%;
+           background:${C[index % 4]};
+           animation-delay:${(Math.random() * 1.2).toFixed(2)}s
+         ">
+      </i>
+    `
+  ).join("");
+
+  setTimeout(() => {
+    $("cf").innerHTML = "";
+  }, 4500);
+}
+
+function showResults(record, firstRecord) {
+
+  const levelIndex = levelFor(
+    record.wpm * record.acc / 100,
+    record.acc
+  );
+
+  let message = MSGS[levelIndex];
+
+  if (firstRecord) {
+
+    const difference =
+      record.wpm - firstRecord.wpm;
+
+    message +=
+      ` ${difference >= 0 ? "+" : ""}${difference} WPM compared with your first game.`;
+  }
+
+  $("resLvl").textContent =
+    LEVELS[levelIndex] + " performance";
+
+  $("resMsg").textContent = message;
+
+  $("resGrid").innerHTML = [
+
+    ["⚡", "WPM", record.wpm],
+
+    ["🎯", "Accuracy", record.acc + "%"],
+
+    ["✅", "Correct chars", record.cc],
+
+    ["❌", "Incorrect chars", record.wc],
+
+    ["⚠️", "Mistakes", record.bad],
+
+    ["⏱️", "Time taken", record.durationSeconds + "s"],
+
+    ["⌨️", "Chars typed", record.typed],
+
+    ["⭐", "Final score", record.score],
+
+    ["🎚️", "Difficulty", record.diff],
+
+    ["📝", "Words completed", record.words]
+
+  ].map(statCard).join("");
+
+  show("results");
+
+  count($("resGrid"));
+
+  confetti();
+
+}
+
+/* =========================================================
+   28. MULTIPLAYER PLACEHOLDER
+========================================================= */
+
+/*
+  Multiplayer is not connected to a server yet.
+  This section is only a visual placeholder.
+*/
+
+function connectToServer() {
+  return false;
+}
+
+$("rooms").innerHTML = [
+  ["Room Alpha", "Easy"],
+  ["Room Bravo", "Medium"],
+  ["Room Charlie", "Hard"]
+
+].map(([name, difficulty]) => `
+  <div class="stat">
+    <b>${name}</b>
+    <small>${difficulty} · 0/4 players</small>
+    <button class="btn alt sm" data-r="${name}">
+      Join
+    </button>
+  </div>
+`).join("");
+
+function mp(name) {
+
+  $("mpMsg").textContent = connectToServer()
+    ? ""
+    : `🔌 Cannot join "${name}": no server is connected yet.`;
+}
+
+$("rooms").addEventListener("click", event => {
+
+  const button = event.target.closest("[data-r]");
+
+  if (!button) return;
+
+  mp(button.dataset.r);
+});
+
+$("joinBtn").addEventListener("click", () => {
+
+  const roomCode = $("code").value.trim();
+
+  mp(roomCode || "(no code)");
+});
+
+/* =========================================================
+   29. EXPORT RESULTS TO CSV
+========================================================= */
+
+$("csvBtn").addEventListener("click", () => {
+
+  const results = myResults();
+
+  if (!results.length) {
+
+    alert("You do not have any results to export yet.");
+
+    return;
+  }
+
+  /*
+    Do not include the student's registered display name
+    in the research CSV export.
+  */
+
+  const keys = Object.keys(results[0]).filter(
+    key => key !== "student"
+  );
+
+  if (!keys.includes("participantCode")) {
+    keys.push("participantCode");
+  }
+
+  const headers = keys.map(key => {
+
+    return key === "participantCode"
+      ? "participant_code"
+      : key;
+  });
+
+  const rows = results.map(record => {
+
+    return keys.map(key => {
+
+      const value = key === "participantCode"
+        ? (record[key] || "")
+        : (record[key] ?? "");
+
+      return JSON.stringify(value);
+
+    }).join(",");
+  });
+
+  const csv = [
+    headers.join(","),
+    ...rows
+  ].join("\n");
+
+  const blob = new Blob(
+    [csv],
+    { type: "text/csv;charset=utf-8" }
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "my-typing-results.csv";
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
+});
+
+/* =========================================================
+   30. GAME BUTTONS
+========================================================= */
+
+$("spBtn").addEventListener("click", startGame);
+
+$("retry").addEventListener("click", startGame);
+
+$("replay").addEventListener("click", say);
+
+$("submit").addEventListener("click", submit);
+
+$("skip").addEventListener("click", skip);
+
+$("quit").addEventListener("click", () => {
+
+  if (!g) return;
+
+  const confirmed = confirm(
+    "Are you sure you want to quit this game? This unfinished attempt will not be saved."
+  );
+
+  if (!confirmed) return;
+
+  stop();
+
+  g = null;
+
+  show("dash");
+});
+
+$("typed").addEventListener("keydown", event => {
+
+  if (event.key === "Enter") {
+
+    event.preventDefault();
+
+    submit();
+
+  } else if (event.key === "ArrowUp") {
+
+    event.preventDefault();
+
+    say();
+  }
+});
+
+/* =========================================================
+   31. INITIALIZE GAME
+========================================================= */
+
+applyTheme();
+
+show("dash");
+
+/*
+  Retry previously queued research results when the game opens.
+*/
+
+window.addEventListener("load", () => {
+
+  setTimeout(() => {
+
+    void flushPendingResearchUploads();
+
+  }, 1200);
+});
+
+</script>
+
+</body>
+</html>
